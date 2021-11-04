@@ -1,5 +1,7 @@
 use bit_field::BitField;
+use std::env;
 use std::fmt::{self, Debug, Display, Formatter};
+use std::num::ParseIntError;
 use thiserror::Error;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -155,8 +157,24 @@ fn decode(esr: u64) -> Result<Decoded, DecodeError> {
     })
 }
 
+/// Parse a decimal or hexadecimal number.
+fn parse_number(s: &str) -> Result<u64, ParseIntError> {
+    if s.starts_with("0x") {
+        u64::from_str_radix(&s[2..], 16)
+    } else {
+        s.parse()
+    }
+}
+
 fn main() {
-    let esr = 2516582480;
+    let args: Vec<_> = env::args().collect();
+    if args.len() != 2 {
+        eprintln!("Usage:");
+        eprintln!("  {} <ESR value>", args[0]);
+        return;
+    }
+
+    let esr = parse_number(&args[1]).unwrap();
     let decoded = decode(esr).unwrap();
     println!("{:#034x}: {}", esr, decoded.description);
     for field in decoded.fields {
