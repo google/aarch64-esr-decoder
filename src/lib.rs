@@ -119,7 +119,7 @@ impl Display for SyndromeAccessSize {
     }
 }
 
-fn decode_sf(sf: bool) -> &'static str {
+fn describe_sf(sf: bool) -> &'static str {
     if sf {
         "64-bit wide register"
     } else {
@@ -127,7 +127,7 @@ fn decode_sf(sf: bool) -> &'static str {
     }
 }
 
-fn decode_ar(ar: bool) -> &'static str {
+fn describe_ar(ar: bool) -> &'static str {
     if ar {
         "Acquire/release semantics"
     } else {
@@ -151,8 +151,8 @@ fn decode_iss_data_abort(iss: u64) -> Decoded {
     });
     let sse = FieldInfo::get_bit(iss, "SSE", 21);
     let srt = FieldInfo::get(iss, "SRT", 16, 21);
-    let sf = FieldInfo::get_bit(iss, "SF", 15).describe_bit(decode_sf);
-    let ar = FieldInfo::get_bit(iss, "AR", 14).describe_bit(decode_ar);
+    let sf = FieldInfo::get_bit(iss, "SF", 15).describe_bit(describe_sf);
+    let ar = FieldInfo::get_bit(iss, "AR", 14).describe_bit(describe_ar);
     let vncr = FieldInfo::get_bit(iss, "VNCR", 13);
     let fnv = FieldInfo::get_bit(iss, "FnV", 10);
     let ea = FieldInfo::get_bit(iss, "EA", 9);
