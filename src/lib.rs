@@ -34,6 +34,10 @@ impl FieldInfo {
             value,
         }
     }
+
+    fn get_bit(register: u64, name: &'static str, bit: usize) -> Self {
+        Self::get(register, name, bit, bit + 1)
+    }
 }
 
 impl Display for FieldInfo {
@@ -111,7 +115,7 @@ pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
     let res0 = FieldInfo::get(esr, "RES0", 37, 64);
     let iss2 = FieldInfo::get(esr, "ISS2", 32, 37);
     let ec = FieldInfo::get(esr, "EC", 26, 32);
-    let il = FieldInfo::get(esr, "IL", 25, 26);
+    let il = FieldInfo::get_bit(esr, "IL", 25);
     let iss = FieldInfo::get(esr, "ISS", 0, 25);
     if res0.value != 0 {
         return Err(DecodeError::InvalidRes0 { res0: res0.value });
