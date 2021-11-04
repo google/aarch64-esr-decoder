@@ -115,17 +115,17 @@ fn decode_iss_data_abort(iss: u64) -> Decoded {
     let dfsc = FieldInfo::get(iss, "DFSC", 0, 6);
     let description = format!("{}, SAS:{}", isv, sas_decoded);
     Decoded {
+        description,
         fields: vec![
             isv, sas, sse, srt, sf, ar, vncr, fnv, ea, cm, s1ptw, wnr, dfsc,
         ],
-        description,
     }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Decoded {
-    pub fields: Vec<FieldInfo>,
     pub description: String,
+    pub fields: Vec<FieldInfo>,
 }
 
 pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
