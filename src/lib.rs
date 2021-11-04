@@ -53,16 +53,19 @@ impl FieldInfo {
         self.value == 1
     }
 
-    /// Assuming this field has a width of exactly 1, decode it with the given function.
+    /// Assuming this field has a width of exactly 1, describe it with the given function.
     ///
     /// Panics if `self.width != 1`.
-    fn decode_bit<F>(self, decoder: F) -> Self
+    fn describe_bit<F>(self, describer: F) -> Self
     where
-        F: FnOnce(bool) -> Decoded,
+        F: FnOnce(bool) -> &'static str,
     {
         let bit = self.as_bit();
-        let decoded = decoder(bit);
-        self.with_decoded(decoded)
+        let description = Some(describer(bit).to_string());
+        self.with_decoded(Decoded {
+            description,
+            fields: vec![],
+        })
     }
 }
 
@@ -116,27 +119,19 @@ impl Display for SyndromeAccessSize {
     }
 }
 
-fn decode_sf(sf: bool) -> Decoded {
-    let description = if sf {
+fn decode_sf(sf: bool) -> &'static str {
+    if sf {
         "64-bit wide register"
     } else {
         "32-bit wide register"
-    };
-    Decoded {
-        description: Some(description.to_string()),
-        fields: vec![],
     }
 }
 
-fn decode_ar(ar: bool) -> Decoded {
-    let description = if ar {
+fn decode_ar(ar: bool) -> &'static str {
+    if ar {
         "Acquire/release semantics"
     } else {
         "No acquire/release semantics"
-    };
-    Decoded {
-        description: Some(description.to_string()),
-        fields: vec![],
     }
 }
 
@@ -156,8 +151,8 @@ fn decode_iss_data_abort(iss: u64) -> Decoded {
     });
     let sse = FieldInfo::get_bit(iss, "SSE", 21);
     let srt = FieldInfo::get(iss, "SRT", 16, 21);
-    let sf = FieldInfo::get_bit(iss, "SF", 15).decode_bit(decode_sf);
-    let ar = FieldInfo::get_bit(iss, "AR", 14).decode_bit(decode_ar);
+    let sf = FieldInfo::get_bit(iss, "SF", 15).describe_bit(decode_sf);
+    let ar = FieldInfo::get_bit(iss, "AR", 14).describe_bit(decode_ar);
     let vncr = FieldInfo::get_bit(iss, "VNCR", 13);
     let fnv = FieldInfo::get_bit(iss, "FnV", 10);
     let ea = FieldInfo::get_bit(iss, "EA", 9);
