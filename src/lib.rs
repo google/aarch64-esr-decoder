@@ -173,23 +173,19 @@ pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
         0b111100 => ("BRK instruction execution in AArch64 state", None),
         _ => return Err(DecodeError::InvalidEc { ec: ec.value }),
     };
-    let description = if let Some(iss_decoded) = &iss_decoded {
-        format!(
-            "EC:{:#08b} '{}', {}, {} ({}), {}",
-            ec.value, class, il, iss, iss_decoded.description, iss2
-        )
-    } else {
-        format!(
-            "EC:{:#08b} '{}', {}, {}, {}",
-            ec.value, class, il, iss, iss2
-        )
-    };
     let iss = FieldInfo {
         decoded: iss_decoded,
         ..iss
     };
+    let ec = FieldInfo {
+        decoded: Some(Decoded {
+            description: class.to_string(),
+            fields: vec![],
+        }),
+        ..ec
+    };
     Ok(Decoded {
+        description: class.to_string(),
         fields: vec![res0, iss2, ec, il, iss],
-        description,
     })
 }
