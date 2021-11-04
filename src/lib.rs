@@ -102,13 +102,17 @@ impl Display for SyndromeAccessSize {
 fn decode_iss_data_abort(iss: u64) -> Decoded {
     let isv = FieldInfo::get_bit(iss, "ISV", 24);
     let sas = FieldInfo::get(iss, "SAS", 22, 24);
-    let sas_decoded = match sas.value {
+    let sas_value = match sas.value {
         0b00 => SyndromeAccessSize::Byte,
         0b01 => SyndromeAccessSize::Halfword,
         0b10 => SyndromeAccessSize::Word,
         0b11 => SyndromeAccessSize::Doubleword,
         _ => unreachable!(),
     };
+    let sas = sas.with_decoded(Decoded {
+        description: Some(sas_value.to_string()),
+        fields: vec![],
+    });
     let sse = FieldInfo::get_bit(iss, "SSE", 21);
     let srt = FieldInfo::get(iss, "SRT", 16, 21);
     let sf = FieldInfo::get_bit(iss, "SF", 15);
@@ -120,9 +124,9 @@ fn decode_iss_data_abort(iss: u64) -> Decoded {
     let s1ptw = FieldInfo::get_bit(iss, "S1PTW", 7);
     let wnr = FieldInfo::get_bit(iss, "WnR", 6);
     let dfsc = FieldInfo::get(iss, "DFSC", 0, 6);
-    let description = format!("{}, SAS:{}", isv, sas_decoded);
+
     Decoded {
-        description,
+        description: None,
         fields: vec![
             isv, sas, sse, srt, sf, ar, vncr, fnv, ea, cm, s1ptw, wnr, dfsc,
         ],
@@ -131,7 +135,7 @@ fn decode_iss_data_abort(iss: u64) -> Decoded {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Decoded {
-    pub description: String,
+    pub description: Option<String>,
     pub fields: Vec<FieldInfo>,
 }
 
@@ -185,11 +189,11 @@ pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
         ..iss
     };
     let ec = ec.with_decoded(Decoded {
-        description: class.to_string(),
+        description: Some(class.to_string()),
         fields: vec![],
     });
     Ok(Decoded {
-        description: class.to_string(),
+        description: Some(class.to_string()),
         fields: vec![res0, iss2, ec, il, iss],
     })
 }

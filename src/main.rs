@@ -31,7 +31,9 @@ fn main() {
 
 fn print_decoded(decoded: &Decoded, level: usize) {
     let indentation = " ".repeat(level * 2);
-    println!("{}{}", indentation, decoded.description);
+    if let Some(description) = &decoded.description {
+        println!("{}# {}", indentation, description);
+    }
     for field in &decoded.fields {
         if field.width == 1 {
             println!("{}{:02}     {}", indentation, field.start, field);
