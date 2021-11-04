@@ -6,3 +6,4 @@ edition = "2018"
 
 [dependencies]
 bit_field = "0.10.1"
+thiserror = "1.0.30"

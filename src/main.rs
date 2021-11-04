@@ -1,13 +1,23 @@
 use bit_field::BitField;
+use std::fmt::Debug;
+use thiserror::Error;
 
-fn decode(esr: u64) -> String {
+#[derive(Debug, Error)]
+enum DecodeError {
+    #[error("Invalid ESR, res0 is {res0}")]
+    InvalidRes0 { res0: u64 },
+    #[error("Invalid EC {ec}")]
+    InvalidEc { ec: u64 },
+}
+
+fn decode(esr: u64) -> Result<String, DecodeError> {
     let res0 = esr.get_bits(37..64);
     let iss2 = esr.get_bits(32..37);
     let ec = esr.get_bits(26..32);
     let il = esr.get_bit(25);
     let iss = esr.get_bits(0..25);
     if res0 != 0 {
-        return format!("Invalid ESR, res0 is {}", res0);
+        return Err(DecodeError::InvalidRes0 { res0 });
     }
     let class = match ec {
         0b000000 => "Unknown reason",
@@ -43,12 +53,15 @@ fn decode(esr: u64) -> String {
         0b110101 => "Watchpoint exception taken without a change in Exception level",
         0b111000 => "BKPT instruction execution in AArch32 state",
         0b111100 => "BRK instruction execution in AArch64 state",
-        _ => "Invalid EC",
+        _ => return Err(DecodeError::InvalidEc { ec }),
     };
-    format!("EC:{:#08b} '{}', IL:{}, ISS:{:#x}", ec, class, il, iss)
+    Ok(format!(
+        "EC:{:#08b} '{}', IL:{}, ISS:{:#x}, ISS2:{:#x}",
+        ec, class, il, iss, iss2
+    ))
 }
 
 fn main() {
     let esr = 2516582480;
-    println!("{:#034x}: {}", esr, decode(esr));
+    println!("{:#034x}: {}", esr, decode(esr).unwrap());
 }
