@@ -88,7 +88,12 @@ fn decode_iss_data_abort(iss: u64) -> String {
     format!("ISV:{}, SAS:{}", isv, sas)
 }
 
-fn decode(esr: u64) -> Result<String, DecodeError> {
+struct Decoded {
+    fields: Vec<FieldInfo>,
+    description: String,
+}
+
+fn decode(esr: u64) -> Result<Decoded, DecodeError> {
     let res0 = FieldInfo::get(esr, "RES0", 37, 64);
     let iss2 = FieldInfo::get(esr, "ISS2", 32, 37);
     let ec = FieldInfo::get(esr, "EC", 26, 32);
@@ -133,20 +138,37 @@ fn decode(esr: u64) -> Result<String, DecodeError> {
         0b111100 => ("BRK instruction execution in AArch64 state", None),
         _ => return Err(DecodeError::InvalidEc { ec: ec.value }),
     };
-    if let Some(iss_description) = iss_description {
-        Ok(format!(
+    let description = if let Some(iss_description) = iss_description {
+        format!(
             "EC:{:#08b} '{}', {}, {} ({}), {}",
             ec.value, class, il, iss, iss_description, iss2
-        ))
+        )
     } else {
-        Ok(format!(
+        format!(
             "EC:{:#08b} '{}', {}, {}, {}",
             ec.value, class, il, iss, iss2
-        ))
-    }
+        )
+    };
+    Ok(Decoded {
+        fields: vec![res0, iss2, ec, il, iss],
+        description,
+    })
 }
 
 fn main() {
     let esr = 2516582480;
-    println!("{:#034x}: {}", esr, decode(esr).unwrap());
+    let decoded = decode(esr).unwrap();
+    println!("{:#034x}: {}", esr, decoded.description);
+    for field in decoded.fields {
+        if field.width == 1 {
+            println!("{:02}    {}", field.start, field);
+        } else {
+            println!(
+                "{:02}-{:02} {}",
+                field.start + field.width,
+                field.start,
+                field
+            );
+        }
+    }
 }
