@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use aarch64_esr_decoder::decode;
+use aarch64_esr_decoder::{decode, Decoded};
 use std::{env, num::ParseIntError};
 
 fn main() {
@@ -25,17 +25,27 @@ fn main() {
 
     let esr = parse_number(&args[1]).unwrap();
     let decoded = decode(esr).unwrap();
-    println!("{:#034x}: {}", esr, decoded.description);
-    for field in decoded.fields {
+    println!("{:#034x}", esr);
+    print_decoded(&decoded, 0);
+}
+
+fn print_decoded(decoded: &Decoded, level: usize) {
+    let indentation = " ".repeat(level * 2);
+    println!("{}{}", indentation, decoded.description);
+    for field in &decoded.fields {
         if field.width == 1 {
-            println!("{:02}    {}", field.start, field);
+            println!("{}{:02}    {}", indentation, field.start, field);
         } else {
             println!(
-                "{:02}-{:02} {}",
+                "{}{:02}-{:02} {}",
+                indentation,
                 field.start + field.width,
                 field.start,
                 field
             );
+        }
+        if let Some(field_decoded) = &field.decoded {
+            print_decoded(field_decoded, level + 1);
         }
     }
 }

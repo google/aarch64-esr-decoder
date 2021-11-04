@@ -22,16 +22,18 @@ pub struct FieldInfo {
     pub start: usize,
     pub width: usize,
     pub value: u64,
+    pub decoded: Option<Decoded>,
 }
 
 impl FieldInfo {
-    fn get(esr: u64, name: &'static str, start: usize, end: usize) -> Self {
-        let value = esr.get_bits(start..end);
+    fn get(register: u64, name: &'static str, start: usize, end: usize) -> Self {
+        let value = register.get_bits(start..end);
         Self {
             name,
             start,
             width: end - start,
             value,
+            decoded: None,
         }
     }
 
@@ -83,29 +85,37 @@ impl Display for SyndromeAccessSize {
     }
 }
 
-fn decode_iss_data_abort(iss: u64) -> String {
-    let isv = iss.get_bit(24);
-    let sas = match iss.get_bits(22..24) {
+fn decode_iss_data_abort(iss: u64) -> Decoded {
+    let isv = FieldInfo::get_bit(iss, "ISV", 24);
+    let sas = FieldInfo::get(iss, "SAS", 22, 24);
+    let sas_decoded = match sas.value {
         0b00 => SyndromeAccessSize::Byte,
         0b01 => SyndromeAccessSize::Halfword,
         0b10 => SyndromeAccessSize::Word,
         0b11 => SyndromeAccessSize::Doubleword,
         _ => unreachable!(),
     };
-    let sse = iss.get_bit(21);
-    let src = iss.get_bits(16..21);
-    let sf = iss.get_bit(15);
-    let ar = iss.get_bit(14);
-    let vncr = iss.get_bit(13);
-    let fnv = iss.get_bit(10);
-    let ea = iss.get_bit(9);
-    let cm = iss.get_bit(8);
-    let s1ptw = iss.get_bit(7);
-    let wnr = iss.get_bit(6);
-    let dfsc = iss.get_bits(0..6);
-    format!("ISV:{}, SAS:{}", isv, sas)
+    let sse = FieldInfo::get_bit(iss, "SSE", 21);
+    let srt = FieldInfo::get(iss, "SRT", 16, 21);
+    let sf = FieldInfo::get_bit(iss, "SF", 15);
+    let ar = FieldInfo::get_bit(iss, "AR", 14);
+    let vncr = FieldInfo::get_bit(iss, "VNCR", 13);
+    let fnv = FieldInfo::get_bit(iss, "FnV", 10);
+    let ea = FieldInfo::get_bit(iss, "EA", 9);
+    let cm = FieldInfo::get_bit(iss, "CM", 8);
+    let s1ptw = FieldInfo::get_bit(iss, "S1PTW", 7);
+    let wnr = FieldInfo::get_bit(iss, "WnR", 6);
+    let dfsc = FieldInfo::get(iss, "DFSC", 0, 6);
+    let description = format!("{}, SAS:{}", isv, sas_decoded);
+    Decoded {
+        fields: vec![
+            isv, sas, sse, srt, sf, ar, vncr, fnv, ea, cm, s1ptw, wnr, dfsc,
+        ],
+        description,
+    }
 }
 
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Decoded {
     pub fields: Vec<FieldInfo>,
     pub description: String,
@@ -120,7 +130,7 @@ pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
     if res0.value != 0 {
         return Err(DecodeError::InvalidRes0 { res0: res0.value });
     }
-    let (class, iss_description) = match ec.value {
+    let (class, iss_decoded) = match ec.value {
         0b000000 => ("Unknown reason", None),
         0b000001 => ("Wrapped WF* instruction execution", None),
         0b000011 => ("Trapped MCR or MRC access with coproc=0b1111", None),
@@ -156,16 +166,20 @@ pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
         0b111100 => ("BRK instruction execution in AArch64 state", None),
         _ => return Err(DecodeError::InvalidEc { ec: ec.value }),
     };
-    let description = if let Some(iss_description) = iss_description {
+    let description = if let Some(iss_decoded) = &iss_decoded {
         format!(
             "EC:{:#08b} '{}', {}, {} ({}), {}",
-            ec.value, class, il, iss, iss_description, iss2
+            ec.value, class, il, iss, iss_decoded.description, iss2
         )
     } else {
         format!(
             "EC:{:#08b} '{}', {}, {}, {}",
             ec.value, class, il, iss, iss2
         )
+    };
+    let iss = FieldInfo {
+        decoded: iss_decoded,
+        ..iss
     };
     Ok(Decoded {
         fields: vec![res0, iss2, ec, il, iss],
