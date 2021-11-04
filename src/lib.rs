@@ -52,6 +52,18 @@ impl FieldInfo {
         assert!(self.width == 1);
         self.value == 1
     }
+
+    /// Assuming this field has a width of exactly 1, decode it with the given function.
+    ///
+    /// Panics if `self.width != 1`.
+    fn decode_bit<F>(self, decoder: F) -> Self
+    where
+        F: FnOnce(bool) -> Decoded,
+    {
+        let bit = self.as_bit();
+        let decoded = decoder(bit);
+        self.with_decoded(decoded)
+    }
 }
 
 impl Display for FieldInfo {
@@ -144,12 +156,8 @@ fn decode_iss_data_abort(iss: u64) -> Decoded {
     });
     let sse = FieldInfo::get_bit(iss, "SSE", 21);
     let srt = FieldInfo::get(iss, "SRT", 16, 21);
-    let sf = FieldInfo::get_bit(iss, "SF", 15);
-    let sf_value = sf.as_bit();
-    let sf = sf.with_decoded(decode_sf(sf_value));
-    let ar = FieldInfo::get_bit(iss, "AR", 14);
-    let ar_value = ar.as_bit();
-    let ar = ar.with_decoded(decode_ar(ar_value));
+    let sf = FieldInfo::get_bit(iss, "SF", 15).decode_bit(decode_sf);
+    let ar = FieldInfo::get_bit(iss, "AR", 14).decode_bit(decode_ar);
     let vncr = FieldInfo::get_bit(iss, "VNCR", 13);
     let fnv = FieldInfo::get_bit(iss, "FnV", 10);
     let ea = FieldInfo::get_bit(iss, "EA", 9);
