@@ -40,6 +40,13 @@ impl FieldInfo {
     fn get_bit(register: u64, name: &'static str, bit: usize) -> Self {
         Self::get(register, name, bit, bit + 1)
     }
+
+    fn with_decoded(self, decoded: Decoded) -> Self {
+        Self {
+            decoded: Some(decoded),
+            ..self
+        }
+    }
 }
 
 impl Display for FieldInfo {
@@ -177,13 +184,10 @@ pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
         decoded: iss_decoded,
         ..iss
     };
-    let ec = FieldInfo {
-        decoded: Some(Decoded {
-            description: class.to_string(),
-            fields: vec![],
-        }),
-        ..ec
-    };
+    let ec = ec.with_decoded(Decoded {
+        description: class.to_string(),
+        fields: vec![],
+    });
     Ok(Decoded {
         description: class.to_string(),
         fields: vec![res0, iss2, ec, il, iss],
