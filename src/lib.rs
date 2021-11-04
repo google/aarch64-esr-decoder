@@ -47,12 +47,19 @@ impl Display for FieldInfo {
         if self.width == 1 {
             write!(
                 f,
-                "{}:{}",
+                "{}: {}",
                 self.name,
                 if self.value == 1 { "true" } else { "false" }
             )
         } else {
-            write!(f, "{}:{:#x}", self.name, self.value)
+            write!(
+                f,
+                "{}: {:#02$x} {1:#03$b}",
+                self.name,
+                self.value,
+                (self.width + 3) / 4 + 2,
+                self.width + 2
+            )
         }
     }
 }
