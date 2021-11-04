@@ -135,6 +135,22 @@ fn describe_ar(ar: bool) -> &'static str {
     }
 }
 
+fn describe_fnv(fnv: bool) -> &'static str {
+    if fnv {
+        "FAR is not valid, it holds an unknown value"
+    } else {
+        "FAR is valid"
+    }
+}
+
+fn describe_wnr(wnr: bool) -> &'static str {
+    if wnr {
+        "Abort caused by writing to memory"
+    } else {
+        "Abort caused by reading from memory"
+    }
+}
+
 fn decode_iss_data_abort(iss: u64) -> Decoded {
     let isv = FieldInfo::get_bit(iss, "ISV", 24);
     let sas = FieldInfo::get(iss, "SAS", 22, 24);
@@ -154,11 +170,11 @@ fn decode_iss_data_abort(iss: u64) -> Decoded {
     let sf = FieldInfo::get_bit(iss, "SF", 15).describe_bit(describe_sf);
     let ar = FieldInfo::get_bit(iss, "AR", 14).describe_bit(describe_ar);
     let vncr = FieldInfo::get_bit(iss, "VNCR", 13);
-    let fnv = FieldInfo::get_bit(iss, "FnV", 10);
+    let fnv = FieldInfo::get_bit(iss, "FnV", 10).describe_bit(describe_fnv);
     let ea = FieldInfo::get_bit(iss, "EA", 9);
     let cm = FieldInfo::get_bit(iss, "CM", 8);
     let s1ptw = FieldInfo::get_bit(iss, "S1PTW", 7);
-    let wnr = FieldInfo::get_bit(iss, "WnR", 6);
+    let wnr = FieldInfo::get_bit(iss, "WnR", 6).describe_bit(describe_wnr);
     let dfsc = FieldInfo::get(iss, "DFSC", 0, 6);
 
     Decoded {
