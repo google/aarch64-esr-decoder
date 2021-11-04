@@ -25,7 +25,7 @@ fn main() {
 
     let esr = parse_number(&args[1]).unwrap();
     let decoded = decode(esr).unwrap();
-    println!("{:#034x}", esr);
+    println!("ESR {:#034x}:", esr);
     print_decoded(&decoded, 0);
 }
 
