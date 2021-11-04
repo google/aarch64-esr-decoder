@@ -100,11 +100,11 @@ impl Display for FieldInfo {
 
 #[derive(Debug, Error)]
 pub enum DecodeError {
-    #[error("Invalid ESR, res0 is {res0}")]
+    #[error("Invalid ESR, res0 is {res0:#x}")]
     InvalidRes0 { res0: u64 },
-    #[error("Invalid EC {ec}")]
+    #[error("Invalid EC {ec:#x}")]
     InvalidEc { ec: u64 },
-    #[error("Invalid DFSC {dfsc}")]
+    #[error("Invalid DFSC {dfsc:#x}")]
     InvalidDfsc { dfsc: u64 },
 }
 
