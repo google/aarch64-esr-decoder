@@ -34,13 +34,13 @@ fn print_decoded(decoded: &Decoded, level: usize) {
     println!("{}{}", indentation, decoded.description);
     for field in &decoded.fields {
         if field.width == 1 {
-            println!("{}{:02}    {}", indentation, field.start, field);
+            println!("{}{:02}     {}", indentation, field.start, field);
         } else {
             println!(
-                "{}{:02}-{:02} {}",
+                "{}{:02}..{:02} {}",
                 indentation,
-                field.start + field.width,
                 field.start,
+                field.start + field.width - 1,
                 field
             );
         }
