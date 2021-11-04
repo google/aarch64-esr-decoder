@@ -47,6 +47,11 @@ impl FieldInfo {
             ..self
         }
     }
+
+    fn as_bit(&self) -> bool {
+        assert!(self.width == 1);
+        self.value == 1
+    }
 }
 
 impl Display for FieldInfo {
@@ -99,6 +104,30 @@ impl Display for SyndromeAccessSize {
     }
 }
 
+fn decode_sf(sf: bool) -> Decoded {
+    let description = if sf {
+        "64-bit wide register"
+    } else {
+        "32-bit wide register"
+    };
+    Decoded {
+        description: Some(description.to_string()),
+        fields: vec![],
+    }
+}
+
+fn decode_ar(ar: bool) -> Decoded {
+    let description = if ar {
+        "Acquire/release semantics"
+    } else {
+        "No acquire/release semantics"
+    };
+    Decoded {
+        description: Some(description.to_string()),
+        fields: vec![],
+    }
+}
+
 fn decode_iss_data_abort(iss: u64) -> Decoded {
     let isv = FieldInfo::get_bit(iss, "ISV", 24);
     let sas = FieldInfo::get(iss, "SAS", 22, 24);
@@ -116,7 +145,11 @@ fn decode_iss_data_abort(iss: u64) -> Decoded {
     let sse = FieldInfo::get_bit(iss, "SSE", 21);
     let srt = FieldInfo::get(iss, "SRT", 16, 21);
     let sf = FieldInfo::get_bit(iss, "SF", 15);
+    let sf_value = sf.as_bit();
+    let sf = sf.with_decoded(decode_sf(sf_value));
     let ar = FieldInfo::get_bit(iss, "AR", 14);
+    let ar_value = ar.as_bit();
+    let ar = ar.with_decoded(decode_ar(ar_value));
     let vncr = FieldInfo::get_bit(iss, "VNCR", 13);
     let fnv = FieldInfo::get_bit(iss, "FnV", 10);
     let ea = FieldInfo::get_bit(iss, "EA", 9);
