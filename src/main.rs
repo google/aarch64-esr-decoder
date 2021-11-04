@@ -2,6 +2,41 @@ use bit_field::BitField;
 use std::fmt::{self, Debug, Display, Formatter};
 use thiserror::Error;
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct FieldInfo {
+    name: &'static str,
+    start: usize,
+    width: usize,
+    value: u64,
+}
+
+impl FieldInfo {
+    fn get(esr: u64, name: &'static str, start: usize, end: usize) -> Self {
+        let value = esr.get_bits(start..end);
+        Self {
+            name,
+            start,
+            width: end - start,
+            value,
+        }
+    }
+}
+
+impl Display for FieldInfo {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        if self.width == 1 {
+            write!(
+                f,
+                "{}:{}",
+                self.name,
+                if self.value == 1 { "true" } else { "false" }
+            )
+        } else {
+            write!(f, "{}:{:#x}", self.name, self.value)
+        }
+    }
+}
+
 #[derive(Debug, Error)]
 enum DecodeError {
     #[error("Invalid ESR, res0 is {res0}")]
@@ -54,15 +89,15 @@ fn decode_iss_data_abort(iss: u64) -> String {
 }
 
 fn decode(esr: u64) -> Result<String, DecodeError> {
-    let res0 = esr.get_bits(37..64);
-    let iss2 = esr.get_bits(32..37);
-    let ec = esr.get_bits(26..32);
-    let il = esr.get_bit(25);
-    let iss = esr.get_bits(0..25);
-    if res0 != 0 {
-        return Err(DecodeError::InvalidRes0 { res0 });
+    let res0 = FieldInfo::get(esr, "RES0", 37, 64);
+    let iss2 = FieldInfo::get(esr, "ISS2", 32, 37);
+    let ec = FieldInfo::get(esr, "EC", 26, 32);
+    let il = FieldInfo::get(esr, "IL", 25, 26);
+    let iss = FieldInfo::get(esr, "ISS", 0, 25);
+    if res0.value != 0 {
+        return Err(DecodeError::InvalidRes0 { res0: res0.value });
     }
-    let (class, iss_description) = match ec {
+    let (class, iss_description) = match ec.value {
         0b000000 => ("Unknown reason", None),
         0b000001 => ("Wrapped WF* instruction execution", None),
         0b000011 => ("Trapped MCR or MRC access with coproc=0b1111", None),
@@ -82,8 +117,8 @@ fn decode(esr: u64) -> Result<String, DecodeError> {
         0b100000 => ("Instruction Abort from a lower Exception level", None),
         0b100001 => ("Instruction Abort taken without a change in Exception level", None),
         0b100010 => ("PC alignment fault exception", None),
-        0b100100 => ("Data Abort from a lower Exception level", Some(decode_iss_data_abort(iss))),
-        0b100101 => ("Data Abort taken without a change in Exception level", Some(decode_iss_data_abort(iss))),
+        0b100100 => ("Data Abort from a lower Exception level", Some(decode_iss_data_abort(iss.value))),
+        0b100101 => ("Data Abort taken without a change in Exception level", Some(decode_iss_data_abort(iss.value))),
         0b100110 => ("SP alignment fault exception", None),
         0b101000 => ("Trapped floating-point exception taken from AArch32 state", None),
         0b101100 => ("Trapped floating-point exception taken from AArch64 state", None),
@@ -96,17 +131,17 @@ fn decode(esr: u64) -> Result<String, DecodeError> {
         0b110101 => ("Watchpoint exception taken without a change in Exception level", None),
         0b111000 => ("BKPT instruction execution in AArch32 state", None),
         0b111100 => ("BRK instruction execution in AArch64 state", None),
-        _ => return Err(DecodeError::InvalidEc { ec }),
+        _ => return Err(DecodeError::InvalidEc { ec: ec.value }),
     };
     if let Some(iss_description) = iss_description {
         Ok(format!(
-            "EC:{:#08b} '{}', IL:{}, ISS:{:#x} ({}), ISS2:{:#x}",
-            ec, class, il, iss, iss_description, iss2
+            "EC:{:#08b} '{}', {}, {} ({}), {}",
+            ec.value, class, il, iss, iss_description, iss2
         ))
     } else {
         Ok(format!(
-            "EC:{:#08b} '{}', IL:{}, ISS:{:#x}, ISS2:{:#x}",
-            ec, class, il, iss, iss2
+            "EC:{:#08b} '{}', {}, {}, {}",
+            ec.value, class, il, iss, iss2
         ))
     }
 }
