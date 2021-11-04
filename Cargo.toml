@@ -1,0 +1,8 @@
+[package]
+name = "aarch64-esr-decoder"
+version = "0.1.0"
+authors = ["Andrew Walbran <qwandor@google.com>"]
+edition = "2018"
+
+[dependencies]
+bit_field = "0.10.1"
