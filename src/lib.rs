@@ -106,6 +106,8 @@ pub enum DecodeError {
     InvalidEc { ec: u64 },
     #[error("Invalid DFSC {dfsc:#x}")]
     InvalidDfsc { dfsc: u64 },
+    #[error("ISV was false but instruction syndrome bits were nonzero {is:#x}")]
+    UnexpectedInstructionSyndrome { is: u64 },
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -125,6 +127,14 @@ impl Display for SyndromeAccessSize {
             Self::Doubleword => "doubleword",
         };
         write!(f, "{}", s)
+    }
+}
+
+fn describe_isv(isv: bool) -> &'static str {
+    if isv {
+        "Valid instruction syndrome"
+    } else {
+        "No valid instruction syndrome"
     }
 }
 
@@ -204,23 +214,35 @@ fn describe_dfsc(dfsc: u64) -> Result<&'static str, DecodeError> {
 }
 
 fn decode_iss_data_abort(iss: u64) -> Result<Decoded, DecodeError> {
-    let isv = FieldInfo::get_bit(iss, "ISV", 24);
-    let sas = FieldInfo::get(iss, "SAS", 22, 24);
-    let sas_value = match sas.value {
-        0b00 => SyndromeAccessSize::Byte,
-        0b01 => SyndromeAccessSize::Halfword,
-        0b10 => SyndromeAccessSize::Word,
-        0b11 => SyndromeAccessSize::Doubleword,
-        _ => unreachable!(),
+    let isv = FieldInfo::get_bit(iss, "ISV", 24).describe_bit(describe_isv);
+
+    let intruction_syndrome_fields = if isv.as_bit() {
+        // These fields are part of the instruction syndrome, and are only valid if ISV is true.
+        let sas = FieldInfo::get(iss, "SAS", 22, 24);
+        let sas_value = match sas.value {
+            0b00 => SyndromeAccessSize::Byte,
+            0b01 => SyndromeAccessSize::Halfword,
+            0b10 => SyndromeAccessSize::Word,
+            0b11 => SyndromeAccessSize::Doubleword,
+            _ => unreachable!(),
+        };
+        let sas = sas.with_decoded(Decoded {
+            description: Some(sas_value.to_string()),
+            fields: vec![],
+        });
+        let sse = FieldInfo::get_bit(iss, "SSE", 21);
+        let srt = FieldInfo::get(iss, "SRT", 16, 21);
+        let sf = FieldInfo::get_bit(iss, "SF", 15).describe_bit(describe_sf);
+        let ar = FieldInfo::get_bit(iss, "AR", 14).describe_bit(describe_ar);
+        vec![sas, sse, srt, sf, ar]
+    } else {
+        let res0 = FieldInfo::get(iss, "RES0", 14, 24);
+        if res0.value != 0 {
+            return Err(DecodeError::UnexpectedInstructionSyndrome { is: res0.value });
+        }
+        vec![res0]
     };
-    let sas = sas.with_decoded(Decoded {
-        description: Some(sas_value.to_string()),
-        fields: vec![],
-    });
-    let sse = FieldInfo::get_bit(iss, "SSE", 21);
-    let srt = FieldInfo::get(iss, "SRT", 16, 21);
-    let sf = FieldInfo::get_bit(iss, "SF", 15).describe_bit(describe_sf);
-    let ar = FieldInfo::get_bit(iss, "AR", 14).describe_bit(describe_ar);
+
     let vncr = FieldInfo::get_bit(iss, "VNCR", 13);
     let fnv = FieldInfo::get_bit(iss, "FnV", 10).describe_bit(describe_fnv);
     let ea = FieldInfo::get_bit(iss, "EA", 9);
@@ -231,11 +253,12 @@ fn decode_iss_data_abort(iss: u64) -> Result<Decoded, DecodeError> {
     let dfsc_description = describe_dfsc(dfsc.value)?;
     let dfsc = dfsc.with_description(dfsc_description.to_string());
 
+    let mut fields = vec![isv];
+    fields.extend(intruction_syndrome_fields);
+    fields.extend(vec![vncr, fnv, ea, cm, s1ptw, wnr, dfsc]);
     Ok(Decoded {
         description: None,
-        fields: vec![
-            isv, sas, sse, srt, sf, ar, vncr, fnv, ea, cm, s1ptw, wnr, dfsc,
-        ],
+        fields,
     })
 }
 
