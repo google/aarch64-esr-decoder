@@ -48,6 +48,13 @@ impl FieldInfo {
         }
     }
 
+    fn with_description(self, description: String) -> Self {
+        self.with_decoded(Decoded {
+            description: Some(description),
+            fields: vec![],
+        })
+    }
+
     fn as_bit(&self) -> bool {
         assert!(self.width == 1);
         self.value == 1
@@ -97,6 +104,8 @@ pub enum DecodeError {
     InvalidRes0 { res0: u64 },
     #[error("Invalid EC {ec}")]
     InvalidEc { ec: u64 },
+    #[error("Invalid DFSC {dfsc}")]
+    InvalidDfsc { dfsc: u64 },
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -151,7 +160,50 @@ fn describe_wnr(wnr: bool) -> &'static str {
     }
 }
 
-fn decode_iss_data_abort(iss: u64) -> Decoded {
+fn describe_dfsc(dfsc: u64) -> Result<&'static str, DecodeError> {
+    let description = match dfsc {
+        0b000000 => "Address size fault, level 0 of translation or translation table base register.",
+        0b000001 => "Address size fault, level 1.",
+        0b000010 => "Address size fault, level 2.",
+        0b000011 => "Address size fault, level 3.",
+        0b000100 => "Translation fault, level 0.",
+        0b000101 => "Translation fault, level 1.",
+        0b000110 => "Translation fault, level 2.",
+        0b000111 => "Translation fault, level 3.",
+        0b001001 => "Access flag fault, level 1.",
+        0b001010 => "Access flag fault, level 2.",
+        0b001011 => "Access flag fault, level 3.",
+        0b001000 => "Access flag fault, level 0.",
+        0b001100 => "Permission fault, level 0.",
+        0b001101 => "Permission fault, level 1.",
+        0b001110 => "Permission fault, level 2.",
+        0b001111 => "Permission fault, level 3.",
+        0b010000 => "Synchronous External abort, not on translation table walk or hardware update of translation table.",
+        0b010001 => "Synchronous Tag Check Fault.",
+        0b010011 => "Synchronous External abort on translation table walk or hardware update of translation table, level -1.",
+        0b010100 => "Synchronous External abort on translation table walk or hardware update of translation table, level 0.",
+        0b010101 => "Synchronous External abort on translation table walk or hardware update of translation table, level 1.",
+        0b010110 => "Synchronous External abort on translation table walk or hardware update of translation table, level 2.",
+        0b010111 => "Synchronous External abort on translation table walk or hardware update of translation table, level 3.",
+        0b011000 => "Synchronous parity or ECC error on memory access, not on translation table walk.",
+        0b011011 => "Synchronous parity or ECC error on memory access on translation table walk or hardware update of translation table, level -1.",
+        0b011100 => "Synchronous parity or ECC error on memory access on translation table walk or hardware update of translation table, level 0.",
+        0b011101 => "Synchronous parity or ECC error on memory access on translation table walk or hardware update of translation table, level 1.",
+        0b011110 => "Synchronous parity or ECC error on memory access on translation table walk or hardware update of translation table, level 2.",
+        0b011111 => "Synchronous parity or ECC error on memory access on translation table walk or hardware update of translation table, level 3.",
+        0b100001 => "Alignment fault.",
+        0b101001 => "Address size fault, level -1.",
+        0b101011 => "Translation fault, level -1.",
+        0b110000 => "TLB conflict abort.",
+        0b110001 => "Unsupported atomic hardware update fault.",
+        0b110100 => "IMPLEMENTATION DEFINED fault (Lockdown).",
+        0b110101 => "IMPLEMENTATION DEFINED fault (Unsupported Exclusive or Atomic access).",
+        _ => return Err(DecodeError::InvalidDfsc { dfsc }),
+    };
+    Ok(description)
+}
+
+fn decode_iss_data_abort(iss: u64) -> Result<Decoded, DecodeError> {
     let isv = FieldInfo::get_bit(iss, "ISV", 24);
     let sas = FieldInfo::get(iss, "SAS", 22, 24);
     let sas_value = match sas.value {
@@ -176,13 +228,15 @@ fn decode_iss_data_abort(iss: u64) -> Decoded {
     let s1ptw = FieldInfo::get_bit(iss, "S1PTW", 7);
     let wnr = FieldInfo::get_bit(iss, "WnR", 6).describe_bit(describe_wnr);
     let dfsc = FieldInfo::get(iss, "DFSC", 0, 6);
+    let dfsc_description = describe_dfsc(dfsc.value)?;
+    let dfsc = dfsc.with_description(dfsc_description.to_string());
 
-    Decoded {
+    Ok(Decoded {
         description: None,
         fields: vec![
             isv, sas, sse, srt, sf, ar, vncr, fnv, ea, cm, s1ptw, wnr, dfsc,
         ],
-    }
+    })
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -220,8 +274,8 @@ pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
         0b100000 => ("Instruction Abort from a lower Exception level", None),
         0b100001 => ("Instruction Abort taken without a change in Exception level", None),
         0b100010 => ("PC alignment fault exception", None),
-        0b100100 => ("Data Abort from a lower Exception level", Some(decode_iss_data_abort(iss.value))),
-        0b100101 => ("Data Abort taken without a change in Exception level", Some(decode_iss_data_abort(iss.value))),
+        0b100100 => ("Data Abort from a lower Exception level", Some(decode_iss_data_abort(iss.value)?)),
+        0b100101 => ("Data Abort taken without a change in Exception level", Some(decode_iss_data_abort(iss.value)?)),
         0b100110 => ("SP alignment fault exception", None),
         0b101000 => ("Trapped floating-point exception taken from AArch32 state", None),
         0b101100 => ("Trapped floating-point exception taken from AArch64 state", None),
