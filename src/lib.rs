@@ -13,11 +13,13 @@
 // limitations under the License.
 
 mod abort;
+mod wf;
 
 use abort::{decode_iss_data_abort, decode_iss_instruction_abort};
 use bit_field::BitField;
 use std::fmt::{self, Debug, Display, Formatter};
 use thiserror::Error;
+use wf::decode_iss_wf;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct FieldInfo {
@@ -153,7 +155,7 @@ pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
     let iss = FieldInfo::get(esr, "ISS", 0, 25);
     let (class, iss_decoded) = match ec.value {
         0b000000 => ("Unknown reason", Some(decode_iss_res0(iss.value)?)),
-        0b000001 => ("Wrapped WF* instruction execution", None),
+        0b000001 => ("Wrapped WF* instruction execution", Some(decode_iss_wf(iss.value)?)),
         0b000011 => ("Trapped MCR or MRC access with coproc=0b1111", None),
         0b000100 => ("Trapped MCRR or MRRC access with coproc=0b1111", None),
         0b000101 => ("Trapped MCR or MRC access with coproc=0b1110", None),
