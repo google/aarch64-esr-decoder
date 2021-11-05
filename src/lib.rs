@@ -200,3 +200,62 @@ pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
         fields: vec![res0, iss2, ec, il, iss],
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unknown() {
+        let decoded = decode(0).unwrap();
+        assert_eq!(
+            decoded,
+            Decoded {
+                description: Some("Unknown reason".to_string()),
+                fields: vec![
+                    FieldInfo {
+                        name: "RES0",
+                        start: 37,
+                        width: 27,
+                        value: 0,
+                        decoded: None
+                    },
+                    FieldInfo {
+                        name: "ISS2",
+                        start: 32,
+                        width: 5,
+                        value: 0,
+                        decoded: None
+                    },
+                    FieldInfo {
+                        name: "EC",
+                        start: 26,
+                        width: 6,
+                        value: 0,
+                        decoded: Some(Decoded {
+                            description: Some("Unknown reason".to_string()),
+                            fields: vec![]
+                        })
+                    },
+                    FieldInfo {
+                        name: "IL",
+                        start: 25,
+                        width: 1,
+                        value: 0,
+                        decoded: None
+                    },
+                    FieldInfo {
+                        name: "ISS",
+                        start: 0,
+                        width: 25,
+                        value: 0,
+                        decoded: Some(Decoded {
+                            description: Some("ISS is RES0".to_string()),
+                            fields: vec![]
+                        })
+                    }
+                ]
+            }
+        );
+    }
+}
