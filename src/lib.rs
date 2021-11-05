@@ -68,11 +68,16 @@ impl FieldInfo {
         F: FnOnce(bool) -> &'static str,
     {
         let bit = self.as_bit();
-        let description = Some(describer(bit).to_string());
-        self.with_decoded(Decoded {
-            description,
-            fields: vec![],
-        })
+        let description = describer(bit).to_string();
+        self.with_description(description)
+    }
+
+    fn describe<F>(self, describer: F) -> Result<Self, DecodeError>
+    where
+        F: FnOnce(u64) -> Result<&'static str, DecodeError>,
+    {
+        let description = describer(self.value)?.to_string();
+        Ok(self.with_description(description))
     }
 }
 
@@ -249,9 +254,7 @@ fn decode_iss_data_abort(iss: u64) -> Result<Decoded, DecodeError> {
     let cm = FieldInfo::get_bit(iss, "CM", 8);
     let s1ptw = FieldInfo::get_bit(iss, "S1PTW", 7);
     let wnr = FieldInfo::get_bit(iss, "WnR", 6).describe_bit(describe_wnr);
-    let dfsc = FieldInfo::get(iss, "DFSC", 0, 6);
-    let dfsc_description = describe_dfsc(dfsc.value)?;
-    let dfsc = dfsc.with_description(dfsc_description.to_string());
+    let dfsc = FieldInfo::get(iss, "DFSC", 0, 6).describe(describe_dfsc)?;
 
     let mut fields = vec![isv];
     fields.extend(intruction_syndrome_fields);
