@@ -117,10 +117,12 @@ pub enum DecodeError {
     InvalidRes0 { res0: u64 },
     #[error("Invalid EC {ec:#x}")]
     InvalidEc { ec: u64 },
-    #[error("Invalid DFSC {dfsc:#x}")]
-    InvalidDfsc { dfsc: u64 },
+    #[error("Invalid DFSC or IFSC {fsc:#x}")]
+    InvalidFsc { fsc: u64 },
     #[error("ISV was false but instruction syndrome bits were nonzero {is:#x}")]
     UnexpectedInstructionSyndrome { is: u64 },
+    #[error("Invalid SET {set:#x}")]
+    InvalidSet { set: u64 },
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -183,8 +185,8 @@ fn describe_wnr(wnr: bool) -> &'static str {
     }
 }
 
-fn describe_dfsc(dfsc: u64) -> Result<&'static str, DecodeError> {
-    let description = match dfsc {
+fn describe_fsc(fsc: u64) -> Result<&'static str, DecodeError> {
+    let description = match fsc {
         0b000000 => "Address size fault, level 0 of translation or translation table base register.",
         0b000001 => "Address size fault, level 1.",
         0b000010 => "Address size fault, level 2.",
@@ -221,9 +223,39 @@ fn describe_dfsc(dfsc: u64) -> Result<&'static str, DecodeError> {
         0b110001 => "Unsupported atomic hardware update fault.",
         0b110100 => "IMPLEMENTATION DEFINED fault (Lockdown).",
         0b110101 => "IMPLEMENTATION DEFINED fault (Unsupported Exclusive or Atomic access).",
-        _ => return Err(DecodeError::InvalidDfsc { dfsc }),
+        _ => return Err(DecodeError::InvalidFsc { fsc }),
     };
     Ok(description)
+}
+
+fn describe_set(set: u64) -> Result<&'static str, DecodeError> {
+    Ok(match set {
+        0b00 => "Recoverable state (UER)",
+        0b10 => "Uncontainable (UC)",
+        0b11 => "Restartable state (UEO)",
+        _ => return Err(DecodeError::InvalidSet { set }),
+    })
+}
+
+fn decode_iss_instruction_abort(iss: u64) -> Result<Decoded, DecodeError> {
+    let res0a = FieldInfo::get(iss, "RES0", 13, 25).check_res0()?;
+    let fnv = FieldInfo::get_bit(iss, "FnV", 10).describe_bit(describe_fnv);
+    let ea = FieldInfo::get_bit(iss, "EA", 9);
+    let res0b = FieldInfo::get_bit(iss, "RES0", 8).check_res0()?;
+    let s1ptw = FieldInfo::get_bit(iss, "S1PTW", 7);
+    let res0c = FieldInfo::get_bit(iss, "RES0", 6).check_res0()?;
+    let ifsc = FieldInfo::get(iss, "IFSC", 0, 6).describe(describe_fsc)?;
+
+    let set = if ifsc.value == 0b010000 {
+        FieldInfo::get(iss, "SET", 11, 13).describe(describe_set)?
+    } else {
+        FieldInfo::get(iss, "RES0", 11, 13)
+    };
+
+    Ok(Decoded {
+        description: None,
+        fields: vec![res0a, set, fnv, ea, res0b, s1ptw, res0c, ifsc],
+    })
 }
 
 fn decode_iss_data_abort(iss: u64) -> Result<Decoded, DecodeError> {
@@ -262,7 +294,7 @@ fn decode_iss_data_abort(iss: u64) -> Result<Decoded, DecodeError> {
     let cm = FieldInfo::get_bit(iss, "CM", 8);
     let s1ptw = FieldInfo::get_bit(iss, "S1PTW", 7);
     let wnr = FieldInfo::get_bit(iss, "WnR", 6).describe_bit(describe_wnr);
-    let dfsc = FieldInfo::get(iss, "DFSC", 0, 6).describe(describe_dfsc)?;
+    let dfsc = FieldInfo::get(iss, "DFSC", 0, 6).describe(describe_fsc)?;
 
     let mut fields = vec![isv];
     fields.extend(intruction_syndrome_fields);
@@ -302,8 +334,8 @@ pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
         0b011000 => ("Trapped MSR, MRS or System instruction execution in AArch64 state", None),
         0b011001 => ("Access to SVE functionality trapped as a result of CPACR_EL1.ZEN, CPTR_EL2.ZEN, CPTR_EL2.TZ, or CPTR_EL3.EZ", None),
         0b011100 => ("Exception from a Pointer Authentication instruction authentication failure", None),
-        0b100000 => ("Instruction Abort from a lower Exception level", None),
-        0b100001 => ("Instruction Abort taken without a change in Exception level", None),
+        0b100000 => ("Instruction Abort from a lower Exception level", Some(decode_iss_instruction_abort(iss.value)?)),
+        0b100001 => ("Instruction Abort taken without a change in Exception level", Some(decode_iss_instruction_abort(iss.value)?)),
         0b100010 => ("PC alignment fault exception", None),
         0b100100 => ("Data Abort from a lower Exception level", Some(decode_iss_data_abort(iss.value)?)),
         0b100101 => ("Data Abort taken without a change in Exception level", Some(decode_iss_data_abort(iss.value)?)),
