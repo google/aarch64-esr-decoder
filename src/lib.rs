@@ -79,6 +79,14 @@ impl FieldInfo {
         let description = describer(self.value)?.to_string();
         Ok(self.with_description(description))
     }
+
+    fn check_res0(self) -> Result<Self, DecodeError> {
+        if self.value != 0 {
+            Err(DecodeError::InvalidRes0 { res0: self.value })
+        } else {
+            Ok(self)
+        }
+    }
 }
 
 impl Display for FieldInfo {
@@ -272,14 +280,11 @@ pub struct Decoded {
 }
 
 pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
-    let res0 = FieldInfo::get(esr, "RES0", 37, 64);
+    let res0 = FieldInfo::get(esr, "RES0", 37, 64).check_res0()?;
     let iss2 = FieldInfo::get(esr, "ISS2", 32, 37);
     let ec = FieldInfo::get(esr, "EC", 26, 32);
     let il = FieldInfo::get_bit(esr, "IL", 25);
     let iss = FieldInfo::get(esr, "ISS", 0, 25);
-    if res0.value != 0 {
-        return Err(DecodeError::InvalidRes0 { res0: res0.value });
-    }
     let (class, iss_decoded) = match ec.value {
         0b000000 => ("Unknown reason", None),
         0b000001 => ("Wrapped WF* instruction execution", None),
