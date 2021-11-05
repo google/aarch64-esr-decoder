@@ -151,7 +151,7 @@ pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
     let res0 = FieldInfo::get(esr, "RES0", 37, 64).check_res0()?;
     let iss2 = FieldInfo::get(esr, "ISS2", 32, 37);
     let ec = FieldInfo::get(esr, "EC", 26, 32);
-    let il = FieldInfo::get_bit(esr, "IL", 25);
+    let il = FieldInfo::get_bit(esr, "IL", 25).describe_bit(describe_il);
     let iss = FieldInfo::get(esr, "ISS", 0, 25);
     let (class, iss_decoded) = match ec.value {
         0b000000 => ("Unknown reason", Some(decode_iss_res0(iss.value)?)),
@@ -203,6 +203,14 @@ pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
     })
 }
 
+fn describe_il(il: bool) -> &'static str {
+    if il {
+        "32-bit instruction trapped"
+    } else {
+        "16-bit instruction trapped"
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -244,7 +252,10 @@ mod tests {
                         start: 25,
                         width: 1,
                         value: 0,
-                        decoded: None
+                        decoded: Some(Decoded {
+                            description: Some("16-bit instruction trapped".to_string()),
+                            fields: vec![]
+                        })
                     },
                     FieldInfo {
                         name: "ISS",
