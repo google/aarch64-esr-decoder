@@ -17,4 +17,8 @@ import * as wasm from "aarch64-esr-web";
 wasm.init()
 
 const esr = document.getElementById("esr");
-esr.oninput = () => {wasm.decode_esr(esr.value)};
+esr.oninput = () => {
+    if (esr.value.length > 0) {
+        wasm.decode_esr(esr.value)
+    }
+};
