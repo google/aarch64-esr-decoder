@@ -13,6 +13,7 @@ default = ["console_error_panic_hook"]
 [dependencies]
 wasm-bindgen = "0.2.63"
 aarch64-esr-decoder = { path = ".." }
+web-sys = { version = "0.3.55", features = [ "Document", "Element", "HtmlElement", "Node", "Window" ] }
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
