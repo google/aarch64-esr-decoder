@@ -92,6 +92,20 @@ impl FieldInfo {
             Ok(self)
         }
     }
+
+    /// Returns the value as a hexadecimal string, or "true" or "false" if it is a single bit.
+    pub fn value_string(&self) -> String {
+        if self.width == 1 {
+            if self.value == 1 { "true" } else { "false" }.to_string()
+        } else {
+            format!("{:#01$x}", self.value, (self.width + 3) / 4 + 2,)
+        }
+    }
+
+    /// Returns the value as a binary strings.
+    pub fn value_binary_string(&self) -> String {
+        format!("{:#01$b}", self.value, self.width + 2)
+    }
 }
 
 impl Display for FieldInfo {
@@ -106,11 +120,10 @@ impl Display for FieldInfo {
         } else {
             write!(
                 f,
-                "{}: {:#02$x} {1:#03$b}",
+                "{}: {} {}",
                 self.name,
-                self.value,
-                (self.width + 3) / 4 + 2,
-                self.width + 2
+                self.value_string(),
+                self.value_binary_string(),
             )
         }
     }
