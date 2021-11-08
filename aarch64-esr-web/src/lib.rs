@@ -37,17 +37,6 @@ pub fn decode_esr(esr: &str) -> String {
     }
 }
 
-fn make_cell(
-    document: &Document,
-    contents: Option<&str>,
-    colspan: usize,
-) -> Result<Element, JsValue> {
-    let cell = document.create_element("td")?;
-    cell.set_attribute("colspan", &colspan.to_string())?;
-    cell.set_text_content(contents);
-    Ok(cell)
-}
-
 fn show_decoded(esr: u64, decoded: &Decoded) -> Result<(), JsValue> {
     let document = web_sys::window()
         .expect("Couldn't find window")
@@ -127,6 +116,17 @@ fn show_decoded(esr: u64, decoded: &Decoded) -> Result<(), JsValue> {
     table.append_child(&row)?;
 
     Ok(())
+}
+
+fn make_cell(
+    document: &Document,
+    contents: Option<&str>,
+    colspan: usize,
+) -> Result<Element, JsValue> {
+    let cell = document.create_element("td")?;
+    cell.set_attribute("colspan", &colspan.to_string())?;
+    cell.set_text_content(contents);
+    Ok(cell)
 }
 
 fn add_field_cells<F, S>(
