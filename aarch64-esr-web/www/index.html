@@ -8,6 +8,7 @@
       td { border: 1px solid black; }
       tr.description td:not(:empty) { background-color: #ffffdd; }
       tr.name td:not(:empty) { background-color: #ddffdd; }
+      p#error { color: red; }
     </style>
   </head>
   <body>
@@ -18,7 +19,7 @@
       <label for="esr">ESR:</label>
       <input type="text" id="esr" autofocus="true"/>
     </form>
-    <p id="result"></p>
+    <p id="error"></p>
     <table id="result_table"></table>
   </body>
 </html>

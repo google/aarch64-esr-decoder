@@ -25,16 +25,34 @@ pub fn init() {
 }
 
 #[wasm_bindgen]
-pub fn decode_esr(esr: &str) -> String {
-    if let Ok(esr) = parse_number(esr) {
-        let decoded = decode(esr);
-        if let Ok(decoded) = &decoded {
-            show_decoded(esr, decoded);
+pub fn decode_esr(esr: &str) -> Result<(), JsValue> {
+    match parse_number(esr) {
+        Ok(esr) => {
+            let decoded = decode(esr);
+            match &decoded {
+                Ok(decoded) => show_decoded(esr, decoded)?,
+                Err(e) => show_error(&e.to_string()),
+            }
         }
-        format!("{:?}", decoded)
-    } else {
-        "Invalid ESR".to_string()
+        Err(_) => show_error("Invalid ESR"),
     }
+    Ok(())
+}
+
+fn show_error(error: &str) {
+    let document = web_sys::window()
+        .expect("Couldn't find window")
+        .document()
+        .expect("Couldn't find document");
+    let error_element = document
+        .get_element_by_id("error")
+        .expect("Couldn't find error element");
+    let table = document
+        .get_element_by_id("result_table")
+        .expect("Couldn't find result table");
+    // Clear output table.
+    table.set_inner_html("");
+    error_element.set_text_content(Some(error));
 }
 
 fn show_decoded(esr: u64, decoded: &Decoded) -> Result<(), JsValue> {
@@ -42,10 +60,14 @@ fn show_decoded(esr: u64, decoded: &Decoded) -> Result<(), JsValue> {
         .expect("Couldn't find window")
         .document()
         .expect("Couldn't find document");
+    let error_element = document
+        .get_element_by_id("error")
+        .expect("Couldn't find error element");
     let table = document
         .get_element_by_id("result_table")
         .expect("Couldn't find result table");
     // Remove existing contents.
+    error_element.set_inner_html("");
     table.set_inner_html("");
 
     // First row has ESR in binary
