@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use aarch64_esr_decoder::{decode, Decoded, FieldInfo};
+use aarch64_esr_decoder::{decode, DecodeError, Decoded, FieldInfo};
 use std::num::ParseIntError;
 use std::ops::Deref;
 use wasm_bindgen::prelude::*;
@@ -29,10 +29,7 @@ pub fn decode_esr(esr: &str) -> Result<(), JsValue> {
     match parse_number(esr) {
         Ok(esr) => {
             let decoded = decode(esr);
-            match &decoded {
-                Ok(decoded) => show_decoded(esr, decoded)?,
-                Err(e) => show_error(&e.to_string()),
-            }
+            show_decoded(esr, decoded)?;
         }
         Err(_) => show_error("Invalid ESR"),
     }
@@ -55,7 +52,7 @@ fn show_error(error: &str) {
     error_element.set_text_content(Some(error));
 }
 
-fn show_decoded(esr: u64, decoded: &Decoded) -> Result<(), JsValue> {
+fn show_decoded(esr: u64, decoded: Result<Decoded, DecodeError>) -> Result<(), JsValue> {
     let document = web_sys::window()
         .expect("Couldn't find window")
         .document()
@@ -90,62 +87,67 @@ fn show_decoded(esr: u64, decoded: &Decoded) -> Result<(), JsValue> {
     }
     table.append_child(&row)?;
 
-    // Top-level description
-    let row = document.create_element("tr")?;
-    row.set_attribute("class", "description")?;
-    let cell = make_cell(&document, decoded.description.as_deref(), 64)?;
-    row.append_child(&cell)?;
-    table.append_child(&row)?;
+    match decoded {
+        Ok(decoded) => {
+            // Top-level description
+            let row = document.create_element("tr")?;
+            row.set_attribute("class", "description")?;
+            let cell = make_cell(&document, decoded.description.as_deref(), 64)?;
+            row.append_child(&cell)?;
+            table.append_child(&row)?;
 
-    // Top-level field names and values
-    let row = document.create_element("tr")?;
-    row.set_attribute("class", "name")?;
-    let mut last = 64;
-    add_field_cells(&document, &row, &decoded.fields, &mut last, |field| {
-        Some(field.to_string())
-    })?;
-    table.append_child(&row)?;
-
-    // Top-level field descriptions
-    let row = document.create_element("tr")?;
-    row.set_attribute("class", "description")?;
-    let mut last = 64;
-    add_field_cells(&document, &row, &decoded.fields, &mut last, |field| {
-        field
-            .decoded
-            .as_ref()
-            .and_then(|decoded| decoded.description.clone())
-    })?;
-    table.append_child(&row)?;
-
-    // Second level field names and values
-    let row = document.create_element("tr")?;
-    row.set_attribute("class", "name")?;
-    let mut last = 64;
-    for field in &decoded.fields {
-        if let Some(field_decoded) = &field.decoded {
-            add_field_cells(&document, &row, &field_decoded.fields, &mut last, |field| {
+            // Top-level field names and values
+            let row = document.create_element("tr")?;
+            row.set_attribute("class", "name")?;
+            let mut last = 64;
+            add_field_cells(&document, &row, &decoded.fields, &mut last, |field| {
                 Some(field.to_string())
             })?;
-        }
-    }
-    table.append_child(&row)?;
+            table.append_child(&row)?;
 
-    // Second level field descriptions
-    let row = document.create_element("tr")?;
-    row.set_attribute("class", "description")?;
-    let mut last = 64;
-    for field in &decoded.fields {
-        if let Some(field_decoded) = &field.decoded {
-            add_field_cells(&document, &row, &field_decoded.fields, &mut last, |field| {
+            // Top-level field descriptions
+            let row = document.create_element("tr")?;
+            row.set_attribute("class", "description")?;
+            let mut last = 64;
+            add_field_cells(&document, &row, &decoded.fields, &mut last, |field| {
                 field
                     .decoded
                     .as_ref()
                     .and_then(|decoded| decoded.description.clone())
             })?;
+            table.append_child(&row)?;
+
+            // Second level field names and values
+            let row = document.create_element("tr")?;
+            row.set_attribute("class", "name")?;
+            let mut last = 64;
+            for field in &decoded.fields {
+                if let Some(field_decoded) = &field.decoded {
+                    add_field_cells(&document, &row, &field_decoded.fields, &mut last, |field| {
+                        Some(field.to_string())
+                    })?;
+                }
+            }
+            table.append_child(&row)?;
+
+            // Second level field descriptions
+            let row = document.create_element("tr")?;
+            row.set_attribute("class", "description")?;
+            let mut last = 64;
+            for field in &decoded.fields {
+                if let Some(field_decoded) = &field.decoded {
+                    add_field_cells(&document, &row, &field_decoded.fields, &mut last, |field| {
+                        field
+                            .decoded
+                            .as_ref()
+                            .and_then(|decoded| decoded.description.clone())
+                    })?;
+                }
+            }
+            table.append_child(&row)?;
         }
+        Err(e) => error_element.set_text_content(Some(&e.to_string())),
     }
-    table.append_child(&row)?;
 
     Ok(())
 }
