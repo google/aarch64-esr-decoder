@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>AArch64 ESR decoder</title>
+    <style type="text/css">
+      table { border-collapse: collapse; }
+      td { border: 1px solid black; }
+      tr.description td:not(:empty) { background-color: #ffffdd; }
+      tr.name td:not(:empty) { background-color: #ddffdd; }
+      p#error { color: red; }
+    </style>
+  </head>
+  <body>
+    <noscript>This page contains webassembly and JavaScript content, please enable JavaScript in your browser.</noscript>
+    <script src="./bootstrap.js"></script>
+    <h1>AArch64 ESR decoder</h1>
+    <form>
+      <label for="esr">ESR:</label>
+      <input type="text" id="esr" autofocus="true"/>
+    </form>
+    <p id="error"></p>
+    <table id="result_table"></table>
+  </body>
+</html>
