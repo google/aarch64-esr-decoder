@@ -61,6 +61,7 @@ fn show_decoded(esr: u64, decoded: &Decoded) -> Result<(), JsValue> {
 
     // First row has ESR in binary
     let row = document.create_element("tr")?;
+    row.set_attribute("class", "value")?;
     for i in (0..u64::BITS).rev() {
         let bit = esr & (1 << i) != 0;
         let cell = make_cell(&document, Some(if bit { "1" } else { "0" }), 1)?;
@@ -70,12 +71,14 @@ fn show_decoded(esr: u64, decoded: &Decoded) -> Result<(), JsValue> {
 
     // Top-level description
     let row = document.create_element("tr")?;
+    row.set_attribute("class", "description")?;
     let cell = make_cell(&document, decoded.description.as_deref(), 64)?;
     row.append_child(&cell)?;
     table.append_child(&row)?;
 
     // Top-level field names and values
     let row = document.create_element("tr")?;
+    row.set_attribute("class", "name")?;
     let mut last = 64;
     add_field_cells(&document, &row, &decoded.fields, &mut last, |field| {
         Some(field.to_string())
@@ -84,6 +87,7 @@ fn show_decoded(esr: u64, decoded: &Decoded) -> Result<(), JsValue> {
 
     // Top-level field descriptions
     let row = document.create_element("tr")?;
+    row.set_attribute("class", "description")?;
     let mut last = 64;
     add_field_cells(&document, &row, &decoded.fields, &mut last, |field| {
         field
@@ -95,6 +99,7 @@ fn show_decoded(esr: u64, decoded: &Decoded) -> Result<(), JsValue> {
 
     // Second level field names and values
     let row = document.create_element("tr")?;
+    row.set_attribute("class", "name")?;
     let mut last = 64;
     for field in &decoded.fields {
         if let Some(field_decoded) = &field.decoded {
@@ -107,6 +112,7 @@ fn show_decoded(esr: u64, decoded: &Decoded) -> Result<(), JsValue> {
 
     // Second level field descriptions
     let row = document.create_element("tr")?;
+    row.set_attribute("class", "description")?;
     let mut last = 64;
     for field in &decoded.fields {
         if let Some(field_decoded) = &field.decoded {
