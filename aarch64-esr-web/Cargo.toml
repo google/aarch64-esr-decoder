@@ -3,6 +3,11 @@ name = "aarch64-esr-web"
 version = "0.1.0"
 authors = ["Andrew Walbran <qwandor@google.com>"]
 edition = "2018"
+license = "Apache-2.0"
+description = "A webapp for decoding aarch64 Exception Syndrome Register values."
+repository = "https://github.com/google/aarch64-esr-decoder/"
+keywords = ["aarch64", "esr", "wasm"]
+categories = ["development-tools"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
