@@ -13,12 +13,8 @@
 // limitations under the License.
 
 use aarch64_esr_decoder::decode;
+use std::num::ParseIntError;
 use wasm_bindgen::prelude::*;
-
-#[wasm_bindgen]
-extern "C" {
-    fn alert(s: &str);
-}
 
 #[wasm_bindgen]
 pub fn init() {
@@ -27,7 +23,20 @@ pub fn init() {
 }
 
 #[wasm_bindgen]
-pub fn decode_esr(esr: u64) {
-    let decoded = decode(esr);
-    alert(&format!("{:?}", decoded));
+pub fn decode_esr(esr: &str) -> String {
+    if let Ok(esr) = parse_number(esr) {
+        let decoded = decode(esr);
+        format!("{:?}", decoded)
+    } else {
+        "Invalid ESR".to_string()
+    }
+}
+
+/// Parse a decimal or hexadecimal number.
+fn parse_number(s: &str) -> Result<u64, ParseIntError> {
+    if s.starts_with("0x") {
+        u64::from_str_radix(&s[2..], 16)
+    } else {
+        s.parse()
+    }
 }
