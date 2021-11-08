@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use aarch64_esr_decoder::{decode, Decoded};
+use aarch64_esr_decoder::{decode, Decoded, FieldInfo};
 use std::num::ParseIntError;
+use std::ops::Deref;
 use wasm_bindgen::prelude::*;
 use web_sys::{Document, Element};
 
@@ -75,41 +76,43 @@ fn show_decoded(esr: u64, decoded: &Decoded) -> Result<(), JsValue> {
 
     // Top-level field names
     let row = document.create_element("tr")?;
-    let mut last = 64;
-    for field in &decoded.fields {
-        if field.start + field.width != last {
-            // Add a filler
-            let cell = make_cell(&document, None, last - field.start - field.width)?;
-            row.append_child(&cell)?;
-        }
-        let cell = make_cell(&document, Some(field.name), field.width)?;
-        row.append_child(&cell)?;
-        last = field.start;
-    }
+    add_field_cells(&document, &row, &decoded.fields, |field| Some(field.name))?;
     table.append_child(&row)?;
 
     // Top-level field descriptions
     let row = document.create_element("tr")?;
+    add_field_cells(&document, &row, &decoded.fields, |field| {
+        field
+            .decoded
+            .as_ref()
+            .and_then(|decoded| decoded.description.clone())
+    })?;
+    table.append_child(&row)?;
+
+    Ok(())
+}
+
+fn add_field_cells<F, S>(
+    document: &Document,
+    row: &Element,
+    fields: &[FieldInfo],
+    get_contents: F,
+) -> Result<(), JsValue>
+where
+    F: Fn(&FieldInfo) -> Option<S>,
+    S: Deref<Target = str>,
+{
     let mut last = 64;
-    for field in &decoded.fields {
+    for field in fields {
         if field.start + field.width != last {
             // Add a filler
-            let cell = make_cell(&document, None, last - field.start - field.width)?;
+            let cell = make_cell(document, None, last - field.start - field.width)?;
             row.append_child(&cell)?;
         }
-        let cell = make_cell(
-            &document,
-            field
-                .decoded
-                .as_ref()
-                .and_then(|decoded| decoded.description.as_deref()),
-            field.width,
-        )?;
+        let cell = make_cell(document, get_contents(field).as_deref(), field.width)?;
         row.append_child(&cell)?;
         last = field.start;
     }
-    table.append_child(&row)?;
-
     Ok(())
 }
 
