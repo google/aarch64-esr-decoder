@@ -73,10 +73,15 @@ pub fn decode_iss_data_abort(iss: u64) -> Result<Decoded, DecodeError> {
     let s1ptw = FieldInfo::get_bit(iss, "S1PTW", 7);
     let wnr = FieldInfo::get_bit(iss, "WnR", 6).describe_bit(describe_wnr);
     let dfsc = FieldInfo::get(iss, "DFSC", 0, 6).describe(describe_fsc)?;
+    let set = if dfsc.value == 0b010000 {
+        FieldInfo::get(iss, "SET", 11, 13).describe(describe_set)?
+    } else {
+        FieldInfo::get(iss, "RES0", 11, 13)
+    };
 
     let mut fields = vec![isv];
     fields.extend(intruction_syndrome_fields);
-    fields.extend(vec![vncr, fnv, ea, cm, s1ptw, wnr, dfsc]);
+    fields.extend(vec![vncr, set, fnv, ea, cm, s1ptw, wnr, dfsc]);
     Ok(Decoded {
         description: None,
         fields,
