@@ -74,9 +74,11 @@ fn show_decoded(esr: u64, decoded: &Decoded) -> Result<(), JsValue> {
     row.append_child(&cell)?;
     table.append_child(&row)?;
 
-    // Top-level field names
+    // Top-level field names and values
     let row = document.create_element("tr")?;
-    add_field_cells(&document, &row, &decoded.fields, |field| Some(field.name))?;
+    add_field_cells(&document, &row, &decoded.fields, |field| {
+        Some(field.to_string())
+    })?;
     table.append_child(&row)?;
 
     // Top-level field descriptions
