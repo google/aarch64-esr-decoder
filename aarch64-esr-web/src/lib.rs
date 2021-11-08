@@ -70,7 +70,17 @@ fn show_decoded(esr: u64, decoded: &Decoded) -> Result<(), JsValue> {
     error_element.set_inner_html("");
     table.set_inner_html("");
 
-    // First row has ESR in binary
+    // ESR in hexadecimal
+    let row = document.create_element("tr")?;
+    row.set_attribute("class", "value")?;
+    let esr_hex = format!("{:016x}", esr);
+    for digit in esr_hex.chars() {
+        let cell = make_cell(&document, Some(&digit.to_string()), 4)?;
+        row.append_child(&cell)?;
+    }
+    table.append_child(&row)?;
+
+    // ESR in binary
     let row = document.create_element("tr")?;
     row.set_attribute("class", "value")?;
     for i in (0..u64::BITS).rev() {
