@@ -1,0 +1,31 @@
+name: Web
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.3.0
+      - name: Build with wasm-pack
+        working-directory: aarch64-esr-web
+        run: wasm-pack build
+      - name: NPM install and build
+        working-directory: aarch64-esr-web/www
+        run: |
+          npm install
+          npm run build
+      - name: Deploy to GitHub Pages
+        if: ${{ github.event_name == 'push' }}
+        uses: JamesIves/github-pages-deploy-action@4.1.5
+        with:
+          branch: gh-pages
+          folder: aarch64-esr-web/www/dist
