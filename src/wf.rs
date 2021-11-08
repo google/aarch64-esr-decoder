@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::common::describe_cv;
 use crate::{DecodeError, Decoded, FieldInfo};
 
 /// Decodes the ISS value for a trapped WF* instruction.
@@ -28,14 +29,6 @@ pub fn decode_iss_wf(iss: u64) -> Result<Decoded, DecodeError> {
         description: None,
         fields: vec![cv, cond, res0a, rn, res0b, rv, ti],
     })
-}
-
-fn describe_cv(cv: bool) -> &'static str {
-    if cv {
-        "COND is valid"
-    } else {
-        "COND is not valid"
-    }
 }
 
 fn describe_rv(rv: bool) -> &'static str {

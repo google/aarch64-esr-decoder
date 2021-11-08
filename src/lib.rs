@@ -13,10 +13,13 @@
 // limitations under the License.
 
 mod abort;
+mod common;
+mod mcr;
 mod wf;
 
 use abort::{decode_iss_data_abort, decode_iss_instruction_abort};
 use bit_field::BitField;
+use mcr::{decode_iss_mcr, decode_iss_mcrr};
 use std::fmt::{self, Debug, Display, Formatter};
 use thiserror::Error;
 use wf::decode_iss_wf;
@@ -169,9 +172,9 @@ pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
     let (class, iss_decoded) = match ec.value {
         0b000000 => ("Unknown reason", Some(decode_iss_res0(iss.value)?)),
         0b000001 => ("Wrapped WF* instruction execution", Some(decode_iss_wf(iss.value)?)),
-        0b000011 => ("Trapped MCR or MRC access with coproc=0b1111", None),
-        0b000100 => ("Trapped MCRR or MRRC access with coproc=0b1111", None),
-        0b000101 => ("Trapped MCR or MRC access with coproc=0b1110", None),
+        0b000011 => ("Trapped MCR or MRC access with coproc=0b1111", Some(decode_iss_mcr(iss.value)?)),
+        0b000100 => ("Trapped MCRR or MRRC access with coproc=0b1111", Some(decode_iss_mcrr(iss.value)?)),
+        0b000101 => ("Trapped MCR or MRC access with coproc=0b1110", Some(decode_iss_mcr(iss.value)?)),
         0b000110 => ("Trapped LDC or STC access", None),
         0b000111 => ("Trapped access to SVE, Advanced SIMD or floating point", None),
         0b001010 => ("Trapped execution of an LD64B, ST64B, ST64BV, or ST64BV0 instruction", None),
