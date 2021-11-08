@@ -76,19 +76,48 @@ fn show_decoded(esr: u64, decoded: &Decoded) -> Result<(), JsValue> {
 
     // Top-level field names and values
     let row = document.create_element("tr")?;
-    add_field_cells(&document, &row, &decoded.fields, |field| {
+    let mut last = 64;
+    add_field_cells(&document, &row, &decoded.fields, &mut last, |field| {
         Some(field.to_string())
     })?;
     table.append_child(&row)?;
 
     // Top-level field descriptions
     let row = document.create_element("tr")?;
-    add_field_cells(&document, &row, &decoded.fields, |field| {
+    let mut last = 64;
+    add_field_cells(&document, &row, &decoded.fields, &mut last, |field| {
         field
             .decoded
             .as_ref()
             .and_then(|decoded| decoded.description.clone())
     })?;
+    table.append_child(&row)?;
+
+    // Second level field names and values
+    let row = document.create_element("tr")?;
+    let mut last = 64;
+    for field in &decoded.fields {
+        if let Some(field_decoded) = &field.decoded {
+            add_field_cells(&document, &row, &field_decoded.fields, &mut last, |field| {
+                Some(field.to_string())
+            })?;
+        }
+    }
+    table.append_child(&row)?;
+
+    // Second level field descriptions
+    let row = document.create_element("tr")?;
+    let mut last = 64;
+    for field in &decoded.fields {
+        if let Some(field_decoded) = &field.decoded {
+            add_field_cells(&document, &row, &field_decoded.fields, &mut last, |field| {
+                field
+                    .decoded
+                    .as_ref()
+                    .and_then(|decoded| decoded.description.clone())
+            })?;
+        }
+    }
     table.append_child(&row)?;
 
     Ok(())
@@ -98,22 +127,22 @@ fn add_field_cells<F, S>(
     document: &Document,
     row: &Element,
     fields: &[FieldInfo],
+    last: &mut usize,
     get_contents: F,
 ) -> Result<(), JsValue>
 where
     F: Fn(&FieldInfo) -> Option<S>,
     S: Deref<Target = str>,
 {
-    let mut last = 64;
     for field in fields {
-        if field.start + field.width != last {
+        if field.start + field.width != *last {
             // Add a filler
-            let cell = make_cell(document, None, last - field.start - field.width)?;
+            let cell = make_cell(document, None, *last - field.start - field.width)?;
             row.append_child(&cell)?;
         }
         let cell = make_cell(document, get_contents(field).as_deref(), field.width)?;
         row.append_child(&cell)?;
-        last = field.start;
+        *last = field.start;
     }
     Ok(())
 }
