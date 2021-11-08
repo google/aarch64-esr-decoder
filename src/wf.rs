@@ -14,6 +14,7 @@
 
 use crate::{DecodeError, Decoded, FieldInfo};
 
+/// Decodes the ISS value for a trapped WF* instruction.
 pub fn decode_iss_wf(iss: u64) -> Result<Decoded, DecodeError> {
     let cv = FieldInfo::get_bit(iss, "CV", 24).describe_bit(describe_cv);
     let cond = FieldInfo::get(iss, "COND", 20, 24);

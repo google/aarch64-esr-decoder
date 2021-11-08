@@ -15,6 +15,7 @@
 use crate::{DecodeError, Decoded, FieldInfo};
 use std::fmt::{self, Debug, Display, Formatter};
 
+/// Decodes the ISS value for an Instruction Abort.
 pub fn decode_iss_instruction_abort(iss: u64) -> Result<Decoded, DecodeError> {
     let res0a = FieldInfo::get(iss, "RES0", 13, 25).check_res0()?;
     let fnv = FieldInfo::get_bit(iss, "FnV", 10).describe_bit(describe_fnv);
@@ -36,6 +37,7 @@ pub fn decode_iss_instruction_abort(iss: u64) -> Result<Decoded, DecodeError> {
     })
 }
 
+/// Decodes the ISS value for a Data Abort.
 pub fn decode_iss_data_abort(iss: u64) -> Result<Decoded, DecodeError> {
     let isv = FieldInfo::get_bit(iss, "ISV", 24).describe_bit(describe_isv);
 
