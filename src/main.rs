@@ -54,8 +54,8 @@ fn print_decoded(decoded: &Decoded, level: usize) {
 
 /// Parse a decimal or hexadecimal number.
 fn parse_number(s: &str) -> Result<u64, ParseIntError> {
-    if s.starts_with("0x") {
-        u64::from_str_radix(&s[2..], 16)
+    if let Some(hex) = s.strip_prefix("0x") {
+        u64::from_str_radix(hex, 16)
     } else {
         s.parse()
     }
