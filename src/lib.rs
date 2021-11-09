@@ -26,12 +26,18 @@ use std::fmt::{self, Debug, Display, Formatter};
 use thiserror::Error;
 use wf::decode_iss_wf;
 
+/// Information about a particular field.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct FieldInfo {
+    /// The short name of the field, e.g. "ISS".
     pub name: &'static str,
+    /// The index of the lowest bit of the field.
     pub start: usize,
+    /// The number of bits in the field.
     pub width: usize,
+    /// The value of the field.
     pub value: u64,
+    /// More information about the field and subfields, if available.
     pub decoded: Option<Decoded>,
 }
 
@@ -134,6 +140,7 @@ impl Display for FieldInfo {
     }
 }
 
+/// An error decoding an ESR value.
 #[derive(Debug, Error)]
 pub enum DecodeError {
     #[error("Invalid ESR, res0 is {res0:#x}")]
