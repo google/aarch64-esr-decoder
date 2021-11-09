@@ -18,3 +18,4 @@ thiserror = "1.0.30"
 [package.metadata.deb]
 section = "devel"
 copyright = "Google LLC"
+extended-description = ""
