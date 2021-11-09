@@ -8,6 +8,7 @@ description = "A library and command-line utility for decoding aarch64 Exception
 repository = "https://github.com/google/aarch64-esr-decoder/"
 keywords = ["aarch64", "esr"]
 categories = ["development-tools"]
+exclude = [".github/"]
 
 [dependencies]
 bit_field = "0.10.1"
