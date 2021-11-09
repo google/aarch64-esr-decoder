@@ -2,6 +2,8 @@
 
 A small webapp for decoding aarch64 ESR register values.
 
+[See it in action](https://google.github.io/aarch64-esr-decoder/).
+
 This is not an officially supported Google product.
 
 ## Usage
