@@ -58,6 +58,15 @@
 /******/ 					"__wbindgen_object_drop_ref": function(p0i32) {
 /******/ 						return installedModules["../pkg/aarch64_esr_web_bg.js"].exports["__wbindgen_object_drop_ref"](p0i32);
 /******/ 					},
+/******/ 					"__wbg_new_693216e109162396": function() {
+/******/ 						return installedModules["../pkg/aarch64_esr_web_bg.js"].exports["__wbg_new_693216e109162396"]();
+/******/ 					},
+/******/ 					"__wbg_stack_0ddaca5d1abfb52f": function(p0i32,p1i32) {
+/******/ 						return installedModules["../pkg/aarch64_esr_web_bg.js"].exports["__wbg_stack_0ddaca5d1abfb52f"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_error_09919627ac0992f5": function(p0i32,p1i32) {
+/******/ 						return installedModules["../pkg/aarch64_esr_web_bg.js"].exports["__wbg_error_09919627ac0992f5"](p0i32,p1i32);
+/******/ 					},
 /******/ 					"__wbg_createElement_86c152812a141a62": function(p0i32,p1i32,p2i32) {
 /******/ 						return installedModules["../pkg/aarch64_esr_web_bg.js"].exports["__wbg_createElement_86c152812a141a62"](p0i32,p1i32,p2i32);
 /******/ 					},
@@ -213,7 +222,7 @@
 /******/ 				promises.push(installedWasmModuleData);
 /******/ 			else {
 /******/ 				var importObject = wasmImportObjects[wasmModuleId]();
-/******/ 				var req = fetch(__webpack_require__.p + "" + {"../pkg/aarch64_esr_web_bg.wasm":"a862bc5a587c108be48b"}[wasmModuleId] + ".module.wasm");
+/******/ 				var req = fetch(__webpack_require__.p + "" + {"../pkg/aarch64_esr_web_bg.wasm":"fc4b53242871f0e52d7d"}[wasmModuleId] + ".module.wasm");
 /******/ 				var promise;
 /******/ 				if(importObject instanceof Promise && typeof WebAssembly.compileStreaming === 'function') {
 /******/ 					promise = Promise.all([WebAssembly.compileStreaming(req), importObject]).then(function(items) {
