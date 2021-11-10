@@ -149,7 +149,9 @@ fn describe_wnr(wnr: bool) -> &'static str {
 
 fn describe_fsc(fsc: u64) -> Result<&'static str, DecodeError> {
     let description = match fsc {
-        0b000000 => "Address size fault, level 0 of translation or translation table base register.",
+        0b000000 => {
+            "Address size fault, level 0 of translation or translation table base register."
+        }
         0b000001 => "Address size fault, level 1.",
         0b000010 => "Address size fault, level 2.",
         0b000011 => "Address size fault, level 3.",
@@ -165,19 +167,54 @@ fn describe_fsc(fsc: u64) -> Result<&'static str, DecodeError> {
         0b001101 => "Permission fault, level 1.",
         0b001110 => "Permission fault, level 2.",
         0b001111 => "Permission fault, level 3.",
-        0b010000 => "Synchronous External abort, not on translation table walk or hardware update of translation table.",
+        0b010000 => {
+            "Synchronous External abort, not on translation table walk or hardware update of \
+             translation table."
+        }
         0b010001 => "Synchronous Tag Check Fault.",
-        0b010011 => "Synchronous External abort on translation table walk or hardware update of translation table, level -1.",
-        0b010100 => "Synchronous External abort on translation table walk or hardware update of translation table, level 0.",
-        0b010101 => "Synchronous External abort on translation table walk or hardware update of translation table, level 1.",
-        0b010110 => "Synchronous External abort on translation table walk or hardware update of translation table, level 2.",
-        0b010111 => "Synchronous External abort on translation table walk or hardware update of translation table, level 3.",
-        0b011000 => "Synchronous parity or ECC error on memory access, not on translation table walk.",
-        0b011011 => "Synchronous parity or ECC error on memory access on translation table walk or hardware update of translation table, level -1.",
-        0b011100 => "Synchronous parity or ECC error on memory access on translation table walk or hardware update of translation table, level 0.",
-        0b011101 => "Synchronous parity or ECC error on memory access on translation table walk or hardware update of translation table, level 1.",
-        0b011110 => "Synchronous parity or ECC error on memory access on translation table walk or hardware update of translation table, level 2.",
-        0b011111 => "Synchronous parity or ECC error on memory access on translation table walk or hardware update of translation table, level 3.",
+        0b010011 => {
+            "Synchronous External abort on translation table walk or hardware update of \
+             translation table, level -1."
+        }
+        0b010100 => {
+            "Synchronous External abort on translation table walk or hardware update of \
+             translation table, level 0."
+        }
+        0b010101 => {
+            "Synchronous External abort on translation table walk or hardware update of \
+             translation table, level 1."
+        }
+        0b010110 => {
+            "Synchronous External abort on translation table walk or hardware update of \
+             translation table, level 2."
+        }
+        0b010111 => {
+            "Synchronous External abort on translation table walk or hardware update of \
+             translation table, level 3."
+        }
+        0b011000 => {
+            "Synchronous parity or ECC error on memory access, not on translation table walk."
+        }
+        0b011011 => {
+            "Synchronous parity or ECC error on memory access on translation table walk or \
+             hardware update of translation table, level -1."
+        }
+        0b011100 => {
+            "Synchronous parity or ECC error on memory access on translation table walk or \
+             hardware update of translation table, level 0."
+        }
+        0b011101 => {
+            "Synchronous parity or ECC error on memory access on translation table walk or \
+             hardware update of translation table, level 1."
+        }
+        0b011110 => {
+            "Synchronous parity or ECC error on memory access on translation table walk or \
+             hardware update of translation table, level 2."
+        }
+        0b011111 => {
+            "Synchronous parity or ECC error on memory access on translation table walk or \
+             hardware update of translation table, level 3."
+        }
         0b100001 => "Alignment fault.",
         0b101001 => "Address size fault, level -1.",
         0b101011 => "Translation fault, level -1.",
