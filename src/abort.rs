@@ -61,10 +61,7 @@ pub fn decode_iss_data_abort(iss: u64) -> Result<Decoded, DecodeError> {
         let ar = FieldInfo::get_bit(iss, "AR", 14).describe_bit(describe_ar);
         vec![sas, sse, srt, sf, ar]
     } else {
-        let res0 = FieldInfo::get(iss, "RES0", 14, 24);
-        if res0.value != 0 {
-            return Err(DecodeError::UnexpectedInstructionSyndrome { is: res0.value });
-        }
+        let res0 = FieldInfo::get(iss, "RES0", 14, 24).check_res0()?;
         vec![res0]
     };
 

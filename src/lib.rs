@@ -150,8 +150,6 @@ pub enum DecodeError {
     InvalidEc { ec: u64 },
     #[error("Invalid DFSC or IFSC {fsc:#x}")]
     InvalidFsc { fsc: u64 },
-    #[error("ISV was false but instruction syndrome bits were nonzero {is:#x}")]
-    UnexpectedInstructionSyndrome { is: u64 },
     #[error("Invalid SET {set:#x}")]
     InvalidSet { set: u64 },
     #[error("Invalid AM {am:#x}")]
