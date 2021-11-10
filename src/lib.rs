@@ -16,6 +16,7 @@ mod abort;
 mod common;
 mod ldc;
 mod mcr;
+mod sve;
 #[cfg(test)]
 mod tests;
 mod wf;
@@ -26,6 +27,7 @@ use ldc::decode_iss_ldc;
 use mcr::{decode_iss_mcr, decode_iss_mcrr};
 use std::fmt::{self, Debug, Display, Formatter};
 use std::num::ParseIntError;
+use sve::decode_iss_sve;
 use thiserror::Error;
 use wf::decode_iss_wf;
 
@@ -194,7 +196,7 @@ pub fn decode(esr: u64) -> Result<Vec<FieldInfo>, DecodeError> {
         0b000110 => ("Trapped LDC or STC access", decode_iss_ldc(iss.value)?),
         0b000111 => (
             "Trapped access to SVE, Advanced SIMD or floating point",
-            vec![],
+            decode_iss_sve(iss.value)?,
         ),
         0b001010 => (
             "Trapped execution of an LD64B, ST64B, ST64BV, or ST64BV0 instruction",

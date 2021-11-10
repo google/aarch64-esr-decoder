@@ -495,3 +495,79 @@ fn instruction_abort() {
         ]
     );
 }
+
+#[test]
+fn sve() {
+    assert_eq!(
+        decode(0x1f300000).unwrap(),
+        vec![
+            FieldInfo {
+                name: "RES0",
+                start: 37,
+                width: 27,
+                value: 0,
+                description: None,
+                subfields: vec![],
+            },
+            FieldInfo {
+                name: "ISS2",
+                start: 32,
+                width: 5,
+                value: 0,
+                description: None,
+                subfields: vec![],
+            },
+            FieldInfo {
+                name: "EC",
+                start: 26,
+                width: 6,
+                value: 7,
+                description: Some(
+                    "Trapped access to SVE, Advanced SIMD or floating point".to_string()
+                ),
+                subfields: vec![]
+            },
+            FieldInfo {
+                name: "IL",
+                start: 25,
+                width: 1,
+                value: 1,
+                description: Some("32-bit instruction trapped".to_string()),
+                subfields: vec![]
+            },
+            FieldInfo {
+                name: "ISS",
+                start: 0,
+                width: 25,
+                value: 19922944,
+                description: None,
+                subfields: vec![
+                    FieldInfo {
+                        name: "CV",
+                        start: 24,
+                        width: 1,
+                        value: 1,
+                        description: Some("COND is valid".to_string()),
+                        subfields: vec![]
+                    },
+                    FieldInfo {
+                        name: "COND",
+                        start: 20,
+                        width: 4,
+                        value: 3,
+                        description: None,
+                        subfields: vec![]
+                    },
+                    FieldInfo {
+                        name: "RES0",
+                        start: 0,
+                        width: 20,
+                        value: 0,
+                        description: None,
+                        subfields: vec![]
+                    }
+                ]
+            },
+        ]
+    );
+}
