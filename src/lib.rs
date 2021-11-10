@@ -207,7 +207,10 @@ pub fn decode(esr: u64) -> Result<Vec<FieldInfo>, DecodeError> {
             "Trapped execution of an LD64B, ST64B, ST64BV, or ST64BV0 instruction",
             decode_iss_ld64b(iss.value)?,
         ),
-        0b001100 => ("Trapped MRRC access with (coproc==0b1110)", vec![]),
+        0b001100 => (
+            "Trapped MRRC access with (coproc==0b1110)",
+            decode_iss_mcrr(iss.value)?,
+        ),
         0b001101 => ("Branch Target Exception", vec![]),
         0b001110 => ("Illegal Execution state", decode_iss_res0(iss.value)?),
         0b010001 => ("SVC instruction execution in AArch32 state", vec![]),
