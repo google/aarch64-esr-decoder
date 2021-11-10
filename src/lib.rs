@@ -13,6 +13,7 @@
 // limitations under the License.
 
 mod abort;
+mod bti;
 mod common;
 mod ld64b;
 mod ldc;
@@ -24,6 +25,7 @@ mod wf;
 
 use abort::{decode_iss_data_abort, decode_iss_instruction_abort};
 use bit_field::BitField;
+use bti::decode_iss_bti;
 use ld64b::decode_iss_ld64b;
 use ldc::decode_iss_ldc;
 use mcr::{decode_iss_mcr, decode_iss_mcrr};
@@ -211,7 +213,7 @@ pub fn decode(esr: u64) -> Result<Vec<FieldInfo>, DecodeError> {
             "Trapped MRRC access with (coproc==0b1110)",
             decode_iss_mcrr(iss.value)?,
         ),
-        0b001101 => ("Branch Target Exception", vec![]),
+        0b001101 => ("Branch Target Exception", decode_iss_bti(iss.value)?),
         0b001110 => ("Illegal Execution state", decode_iss_res0(iss.value)?),
         0b010001 => ("SVC instruction execution in AArch32 state", vec![]),
         0b010101 => ("SVC instruction execution in AArch64 state", vec![]),
