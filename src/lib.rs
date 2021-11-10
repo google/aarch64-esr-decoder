@@ -354,14 +354,14 @@ mod tests {
                         start: 37,
                         width: 27,
                         value: 0,
-                        decoded: None
+                        decoded: None,
                     },
                     FieldInfo {
                         name: "ISS2",
                         start: 32,
                         width: 5,
                         value: 0,
-                        decoded: None
+                        decoded: None,
                     },
                     FieldInfo {
                         name: "EC",
@@ -370,7 +370,7 @@ mod tests {
                         value: 0,
                         decoded: Some(Decoded {
                             description: Some("Unknown reason".to_string()),
-                            fields: vec![]
+                            fields: vec![],
                         })
                     },
                     FieldInfo {
@@ -380,7 +380,7 @@ mod tests {
                         value: 0,
                         decoded: Some(Decoded {
                             description: Some("16-bit instruction trapped".to_string()),
-                            fields: vec![]
+                            fields: vec![],
                         })
                     },
                     FieldInfo {
@@ -390,7 +390,7 @@ mod tests {
                         value: 0,
                         decoded: Some(Decoded {
                             description: Some("ISS is RES0".to_string()),
-                            fields: vec![]
+                            fields: vec![],
                         })
                     },
                 ]
