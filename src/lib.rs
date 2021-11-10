@@ -14,6 +14,7 @@
 
 mod abort;
 mod common;
+mod ld64b;
 mod ldc;
 mod mcr;
 mod sve;
@@ -23,6 +24,7 @@ mod wf;
 
 use abort::{decode_iss_data_abort, decode_iss_instruction_abort};
 use bit_field::BitField;
+use ld64b::decode_iss_ld64b;
 use ldc::decode_iss_ldc;
 use mcr::{decode_iss_mcr, decode_iss_mcrr};
 use std::fmt::{self, Debug, Display, Formatter};
@@ -159,6 +161,9 @@ pub enum DecodeError {
     /// The AM field had an invalid value.
     #[error("Invalid AM {am:#x}")]
     InvalidAm { am: u64 },
+    /// The ISS field has an invalid value for a trapped LD64B or ST64B* exception.
+    #[error("Invalid ISS {iss:#x} for trapped LD64B or ST64B*")]
+    InvalidLd64bIss { iss: u64 },
 }
 
 fn decode_iss_res0(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
@@ -200,7 +205,7 @@ pub fn decode(esr: u64) -> Result<Vec<FieldInfo>, DecodeError> {
         ),
         0b001010 => (
             "Trapped execution of an LD64B, ST64B, ST64BV, or ST64BV0 instruction",
-            vec![],
+            decode_iss_ld64b(iss.value)?,
         ),
         0b001100 => ("Trapped MRRC access with (coproc==0b1110)", vec![]),
         0b001101 => ("Branch Target Exception", vec![]),

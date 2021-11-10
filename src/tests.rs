@@ -571,3 +571,62 @@ fn sve() {
         ]
     );
 }
+
+#[test]
+fn ld64b() {
+    assert_eq!(
+        decode(0x2a000002).unwrap(),
+        vec![
+            FieldInfo {
+                name: "RES0",
+                start: 37,
+                width: 27,
+                value: 0,
+                description: None,
+                subfields: vec![],
+            },
+            FieldInfo {
+                name: "ISS2",
+                start: 32,
+                width: 5,
+                value: 0,
+                description: None,
+                subfields: vec![],
+            },
+            FieldInfo {
+                name: "EC",
+                start: 26,
+                width: 6,
+                value: 10,
+                description: Some(
+                    "Trapped execution of an LD64B, ST64B, ST64BV, or ST64BV0 instruction"
+                        .to_string()
+                ),
+                subfields: vec![]
+            },
+            FieldInfo {
+                name: "IL",
+                start: 25,
+                width: 1,
+                value: 1,
+                description: Some("32-bit instruction trapped".to_string()),
+                subfields: vec![]
+            },
+            FieldInfo {
+                name: "ISS",
+                start: 0,
+                width: 25,
+                value: 2,
+                description: None,
+                subfields: vec![FieldInfo {
+                    name: "ISS",
+                    start: 0,
+                    width: 25,
+                    value: 2,
+                    description: Some("LD64B or ST64B trapped".to_string()),
+                    subfields: vec![]
+                }]
+            }
+        ]
+    );
+}
