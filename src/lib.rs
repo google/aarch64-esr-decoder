@@ -246,6 +246,18 @@ fn describe_il(il: bool) -> &'static str {
     }
 }
 
+/// Parses a decimal or hexadecimal number from a string.
+///
+/// If the string starts with `"0x"` then it will be parsed as hexadecimal, otherwise it will be
+/// assumed to be decimal.
+pub fn parse_number(s: &str) -> Result<u64, ParseIntError> {
+    if let Some(hex) = s.strip_prefix("0x") {
+        u64::from_str_radix(hex, 16)
+    } else {
+        s.parse()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -305,17 +317,5 @@ mod tests {
                 ]
             }
         );
-    }
-}
-
-/// Parses a decimal or hexadecimal number from a string.
-///
-/// If the string starts with `"0x"` then it will be parsed as hexadecimal, otherwise it will be
-/// assumed to be decimal.
-pub fn parse_number(s: &str) -> Result<u64, ParseIntError> {
-    if let Some(hex) = s.strip_prefix("0x") {
-        u64::from_str_radix(hex, 16)
-    } else {
-        s.parse()
     }
 }
