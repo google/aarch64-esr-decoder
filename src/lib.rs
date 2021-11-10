@@ -184,7 +184,7 @@ fn decode_iss_res0(iss: u64) -> Result<Decoded, DecodeError> {
 }
 
 /// Decodes the given Exception Syndrome Register value, or returns an error if it is not valid.
-pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
+pub fn decode(esr: u64) -> Result<Vec<FieldInfo>, DecodeError> {
     let res0 = FieldInfo::get(esr, "RES0", 37, 64).check_res0()?;
     let iss2 = FieldInfo::get(esr, "ISS2", 32, 37);
     let ec = FieldInfo::get(esr, "EC", 26, 32);
@@ -298,10 +298,7 @@ pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
         description: Some(class.to_string()),
         fields: vec![],
     });
-    Ok(Decoded {
-        description: None,
-        fields: vec![res0, iss2, ec, il, iss],
-    })
+    Ok(vec![res0, iss2, ec, il, iss])
 }
 
 fn describe_il(il: bool) -> &'static str {

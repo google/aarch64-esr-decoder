@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use aarch64_esr_decoder::{decode, parse_number, Decoded};
+use aarch64_esr_decoder::{decode, parse_number, FieldInfo};
 use std::env;
 
 fn main() {
@@ -29,12 +29,9 @@ fn main() {
     print_decoded(&decoded, 0);
 }
 
-fn print_decoded(decoded: &Decoded, level: usize) {
+fn print_decoded(fields: &[FieldInfo], level: usize) {
     let indentation = " ".repeat(level * 2);
-    if let Some(description) = &decoded.description {
-        println!("{}# {}", indentation, description);
-    }
-    for field in &decoded.fields {
+    for field in fields {
         if field.width == 1 {
             println!("{}{:02}     {}", indentation, field.start, field);
         } else {
@@ -47,7 +44,11 @@ fn print_decoded(decoded: &Decoded, level: usize) {
             );
         }
         if let Some(field_decoded) = &field.decoded {
-            print_decoded(field_decoded, level + 1);
+            if let Some(description) = &field_decoded.description {
+                println!("{}  # {}", indentation, description);
+            }
+
+            print_decoded(&field_decoded.fields, level + 1);
         }
     }
 }
