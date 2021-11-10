@@ -144,14 +144,19 @@ impl Display for FieldInfo {
 /// An error decoding an ESR value.
 #[derive(Debug, Error)]
 pub enum DecodeError {
+    /// A RES0 field was not 0.
     #[error("Invalid ESR, res0 is {res0:#x}")]
     InvalidRes0 { res0: u64 },
+    /// The EC field had an invalid value.
     #[error("Invalid EC {ec:#x}")]
     InvalidEc { ec: u64 },
+    /// The DFSC or IFSC field had an invalid value.
     #[error("Invalid DFSC or IFSC {fsc:#x}")]
     InvalidFsc { fsc: u64 },
+    /// The SET field had an invalid value.
     #[error("Invalid SET {set:#x}")]
     InvalidSet { set: u64 },
+    /// The AM field had an invalid value.
     #[error("Invalid AM {am:#x}")]
     InvalidAm { am: u64 },
 }
