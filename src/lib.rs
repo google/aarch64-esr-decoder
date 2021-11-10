@@ -742,4 +742,135 @@ mod tests {
             }
         );
     }
+
+    #[test]
+    fn instruction_abort() {
+        assert_eq!(
+            decode(0x82001e10).unwrap(),
+            Decoded {
+                description: Some("Instruction Abort from a lower Exception level".to_string()),
+                fields: vec![
+                    FieldInfo {
+                        name: "RES0",
+                        start: 37,
+                        width: 27,
+                        value: 0,
+                        decoded: None,
+                    },
+                    FieldInfo {
+                        name: "ISS2",
+                        start: 32,
+                        width: 5,
+                        value: 0,
+                        decoded: None,
+                    },
+                    FieldInfo {
+                        name: "EC",
+                        start: 26,
+                        width: 6,
+                        value: 32,
+                        decoded: Some(Decoded {
+                            description: Some(
+                                "Instruction Abort from a lower Exception level".to_string()
+                            ),
+                            fields: vec![],
+                        })
+                    },
+                    FieldInfo {
+                        name: "IL",
+                        start: 25,
+                        width: 1,
+                        value: 1,
+                        decoded: Some(Decoded {
+                            description: Some("32-bit instruction trapped".to_string()),
+                            fields: vec![],
+                        })
+                    },
+                    FieldInfo {
+                        name: "ISS",
+                        start: 0,
+                        width: 25,
+                        value: 7696,
+                        decoded: Some(Decoded {
+                            description: None,
+                            fields: vec![
+                                FieldInfo {
+                                    name: "RES0",
+                                    start: 13,
+                                    width: 12,
+                                    value: 0,
+                                    decoded: None,
+                                },
+                                FieldInfo {
+                                    name: "SET",
+                                    start: 11,
+                                    width: 2,
+                                    value: 3,
+                                    decoded: Some(Decoded {
+                                        description: Some("Restartable state (UEO)".to_string()),
+                                        fields: vec![],
+                                    })
+                                },
+                                FieldInfo {
+                                    name: "FnV",
+                                    start: 10,
+                                    width: 1,
+                                    value: 1,
+                                    decoded: Some(Decoded {
+                                        description: Some(
+                                            "FAR is not valid, it holds an unknown value"
+                                                .to_string()
+                                        ),
+                                        fields: vec![],
+                                    })
+                                },
+                                FieldInfo {
+                                    name: "EA",
+                                    start: 9,
+                                    width: 1,
+                                    value: 1,
+                                    decoded: None,
+                                },
+                                FieldInfo {
+                                    name: "RES0",
+                                    start: 8,
+                                    width: 1,
+                                    value: 0,
+                                    decoded: None,
+                                },
+                                FieldInfo {
+                                    name: "S1PTW",
+                                    start: 7,
+                                    width: 1,
+                                    value: 0,
+                                    decoded: None,
+                                },
+                                FieldInfo {
+                                    name: "RES0",
+                                    start: 6,
+                                    width: 1,
+                                    value: 0,
+                                    decoded: None,
+                                },
+                                FieldInfo {
+                                    name: "IFSC",
+                                    start: 0,
+                                    width: 6,
+                                    value: 16,
+                                    decoded: Some(Decoded {
+                                        description: Some(
+                                            "Synchronous External abort, not on translation table \
+                                             walk or hardware update of translation table."
+                                                .to_string()
+                                        ),
+                                        fields: vec![],
+                                    })
+                                }
+                            ]
+                        })
+                    }
+                ]
+            }
+        );
+    }
 }
