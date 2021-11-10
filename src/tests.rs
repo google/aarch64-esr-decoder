@@ -58,8 +58,15 @@ fn unknown() {
                 start: 0,
                 width: 25,
                 value: 0,
-                description: Some("ISS is RES0".to_string()),
-                subfields: vec![],
+                description: None,
+                subfields: vec![FieldInfo {
+                    name: "RES0",
+                    start: 0,
+                    width: 25,
+                    value: 0,
+                    description: Some("ISS is RES0".to_string()),
+                    subfields: vec![],
+                }],
             },
         ]
     );

@@ -159,12 +159,11 @@ pub enum DecodeError {
     InvalidAm { am: u64 },
 }
 
-fn describe_iss_res0(iss: u64) -> Result<String, DecodeError> {
-    if iss == 0 {
-        Ok("ISS is RES0".to_string())
-    } else {
-        Err(DecodeError::InvalidRes0 { res0: iss })
-    }
+fn decode_iss_res0(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
+    let res0 = FieldInfo::get(iss, "RES0", 0, 25)
+        .check_res0()?
+        .with_description("ISS is RES0".to_string());
+    Ok(vec![res0])
 }
 
 /// Decodes the given Exception Syndrome Register value, or returns an error if it is not valid.
@@ -174,149 +173,101 @@ pub fn decode(esr: u64) -> Result<Vec<FieldInfo>, DecodeError> {
     let ec = FieldInfo::get(esr, "EC", 26, 32);
     let il = FieldInfo::get_bit(esr, "IL", 25).describe_bit(describe_il);
     let iss = FieldInfo::get(esr, "ISS", 0, 25);
-    let (class, iss_description, iss_subfields) = match ec.value {
-        0b000000 => (
-            "Unknown reason",
-            Some(describe_iss_res0(iss.value)?),
-            vec![],
-        ),
+    let (class, iss_subfields) = match ec.value {
+        0b000000 => ("Unknown reason", decode_iss_res0(iss.value)?),
         0b000001 => (
             "Wrapped WF* instruction execution",
-            None,
             decode_iss_wf(iss.value)?,
         ),
         0b000011 => (
             "Trapped MCR or MRC access with coproc=0b1111",
-            None,
             decode_iss_mcr(iss.value)?,
         ),
         0b000100 => (
             "Trapped MCRR or MRRC access with coproc=0b1111",
-            None,
             decode_iss_mcrr(iss.value)?,
         ),
         0b000101 => (
             "Trapped MCR or MRC access with coproc=0b1110",
-            None,
             decode_iss_mcr(iss.value)?,
         ),
-        0b000110 => (
-            "Trapped LDC or STC access",
-            None,
-            decode_iss_ldc(iss.value)?,
-        ),
+        0b000110 => ("Trapped LDC or STC access", decode_iss_ldc(iss.value)?),
         0b000111 => (
             "Trapped access to SVE, Advanced SIMD or floating point",
-            None,
             vec![],
         ),
         0b001010 => (
             "Trapped execution of an LD64B, ST64B, ST64BV, or ST64BV0 instruction",
-            None,
             vec![],
         ),
-        0b001100 => ("Trapped MRRC access with (coproc==0b1110)", None, vec![]),
-        0b001101 => ("Branch Target Exception", None, vec![]),
-        0b001110 => (
-            "Illegal Execution state",
-            Some(describe_iss_res0(iss.value)?),
-            vec![],
-        ),
-        0b010001 => ("SVC instruction execution in AArch32 state", None, vec![]),
-        0b010101 => ("SVC instruction execution in AArch64 state", None, vec![]),
+        0b001100 => ("Trapped MRRC access with (coproc==0b1110)", vec![]),
+        0b001101 => ("Branch Target Exception", vec![]),
+        0b001110 => ("Illegal Execution state", decode_iss_res0(iss.value)?),
+        0b010001 => ("SVC instruction execution in AArch32 state", vec![]),
+        0b010101 => ("SVC instruction execution in AArch64 state", vec![]),
         0b011000 => (
             "Trapped MSR, MRS or System instruction execution in AArch64 state",
-            None,
             vec![],
         ),
         0b011001 => (
             "Access to SVE functionality trapped as a result of CPACR_EL1.ZEN, CPTR_EL2.ZEN, \
              CPTR_EL2.TZ, or CPTR_EL3.EZ",
-            Some(describe_iss_res0(iss.value)?),
-            vec![],
+            decode_iss_res0(iss.value)?,
         ),
         0b011100 => (
             "Exception from a Pointer Authentication instruction authentication failure",
-            None,
             vec![],
         ),
         0b100000 => (
             "Instruction Abort from a lower Exception level",
-            None,
             decode_iss_instruction_abort(iss.value)?,
         ),
         0b100001 => (
             "Instruction Abort taken without a change in Exception level",
-            None,
             decode_iss_instruction_abort(iss.value)?,
         ),
-        0b100010 => (
-            "PC alignment fault exception",
-            Some(describe_iss_res0(iss.value)?),
-            vec![],
-        ),
+        0b100010 => ("PC alignment fault exception", decode_iss_res0(iss.value)?),
         0b100100 => (
             "Data Abort from a lower Exception level",
-            None,
             decode_iss_data_abort(iss.value)?,
         ),
         0b100101 => (
             "Data Abort taken without a change in Exception level",
-            None,
             decode_iss_data_abort(iss.value)?,
         ),
-        0b100110 => (
-            "SP alignment fault exception",
-            Some(describe_iss_res0(iss.value)?),
-            vec![],
-        ),
+        0b100110 => ("SP alignment fault exception", decode_iss_res0(iss.value)?),
         0b101000 => (
             "Trapped floating-point exception taken from AArch32 state",
-            None,
             vec![],
         ),
         0b101100 => (
             "Trapped floating-point exception taken from AArch64 state",
-            None,
             vec![],
         ),
-        0b101111 => ("SError interrupt", None, vec![]),
-        0b110000 => (
-            "Breakpoint exception from a lower Exception level",
-            None,
-            vec![],
-        ),
+        0b101111 => ("SError interrupt", vec![]),
+        0b110000 => ("Breakpoint exception from a lower Exception level", vec![]),
         0b110001 => (
             "Breakpoint exception taken without a change in Exception level",
-            None,
             vec![],
         ),
         0b110010 => (
             "Software Step exception from a lower Exception level",
-            None,
             vec![],
         ),
         0b110011 => (
             "Software Step exception taken without a change in Exception level",
-            None,
             vec![],
         ),
-        0b110100 => (
-            "Watchpoint exception from a lower Exception level",
-            None,
-            vec![],
-        ),
+        0b110100 => ("Watchpoint exception from a lower Exception level", vec![]),
         0b110101 => (
             "Watchpoint exception taken without a change in Exception level",
-            None,
             vec![],
         ),
-        0b111000 => ("BKPT instruction execution in AArch32 state", None, vec![]),
-        0b111100 => ("BRK instruction execution in AArch64 state", None, vec![]),
+        0b111000 => ("BKPT instruction execution in AArch32 state", vec![]),
+        0b111100 => ("BRK instruction execution in AArch64 state", vec![]),
         _ => return Err(DecodeError::InvalidEc { ec: ec.value }),
     };
     let iss = FieldInfo {
-        description: iss_description,
         subfields: iss_subfields,
         ..iss
     };
