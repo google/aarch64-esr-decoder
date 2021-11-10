@@ -16,6 +16,7 @@
 - Added ISS decoding for SVE exceptions.
 - Added ISS decoding for LD64B/ST64B\* exceptions.
 - Added ISS decoding for Branch Target Exception.
+- Added ISS decoding for HVC and SVC exceptions.
 
 ## 0.1.0
 
