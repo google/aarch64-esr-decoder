@@ -161,9 +161,12 @@ pub enum DecodeError {
     InvalidAm { am: u64 },
 }
 
+/// Information about the decoding of a field (or the entire ESR value).
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Decoded {
+    /// A description explaining the field value, if available.
     pub description: Option<String>,
+    /// Any sub-fields.
     pub fields: Vec<FieldInfo>,
 }
 
@@ -178,6 +181,7 @@ fn decode_iss_res0(iss: u64) -> Result<Decoded, DecodeError> {
     }
 }
 
+/// Decodes the given Exception Syndrome Register value, or returns an error if it is not valid.
 pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
     let res0 = FieldInfo::get(esr, "RES0", 37, 64).check_res0()?;
     let iss2 = FieldInfo::get(esr, "ISS2", 32, 37);
@@ -304,7 +308,10 @@ mod tests {
     }
 }
 
-/// Parse a decimal or hexadecimal number.
+/// Parses a decimal or hexadecimal number from a string.
+///
+/// If the string starts with `"0x"` then it will be parsed as hexadecimal, otherwise it will be
+/// assumed to be decimal.
 pub fn parse_number(s: &str) -> Result<u64, ParseIntError> {
     if let Some(hex) = s.strip_prefix("0x") {
         u64::from_str_radix(hex, 16)
