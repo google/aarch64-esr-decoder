@@ -89,11 +89,13 @@ fn show_decoded(esr: u64, decoded: Result<Decoded, DecodeError>) -> Result<(), J
     match decoded {
         Ok(decoded) => {
             // Top-level description
-            let row = document.create_element("tr")?;
-            row.set_attribute("class", "description")?;
-            let cell = make_cell(&document, decoded.description.as_deref(), 64)?;
-            row.append_child(&cell)?;
-            table.append_child(&row)?;
+            if let Some(description) = decoded.description {
+                let row = document.create_element("tr")?;
+                row.set_attribute("class", "description")?;
+                let cell = make_cell(&document, Some(&description), 64)?;
+                row.append_child(&cell)?;
+                table.append_child(&row)?;
+            }
 
             // Top-level field names and values
             let row = document.create_element("tr")?;

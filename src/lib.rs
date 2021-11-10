@@ -299,7 +299,7 @@ pub fn decode(esr: u64) -> Result<Decoded, DecodeError> {
         fields: vec![],
     });
     Ok(Decoded {
-        description: Some(class.to_string()),
+        description: None,
         fields: vec![res0, iss2, ec, il, iss],
     })
 }
