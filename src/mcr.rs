@@ -21,13 +21,14 @@ pub fn decode_iss_mcr(iss: u64) -> Result<Decoded, DecodeError> {
     let cond = FieldInfo::get(iss, "COND", 20, 24);
     let opc2 = FieldInfo::get(iss, "Opc2", 17, 20);
     let opc1 = FieldInfo::get(iss, "Opc1", 14, 17);
+    let crn = FieldInfo::get(iss, "CRn", 10, 14);
     let rt = FieldInfo::get(iss, "Rt", 5, 10);
     let crm = FieldInfo::get(iss, "CRm", 1, 5);
     let direction = FieldInfo::get_bit(iss, "Direction", 0).describe_bit(describe_direction);
 
     Ok(Decoded {
         description: None,
-        fields: vec![cv, cond, opc2, opc1, rt, crm, direction],
+        fields: vec![cv, cond, opc2, opc1, crn, rt, crm, direction],
     })
 }
 
