@@ -13,10 +13,10 @@
 // limitations under the License.
 
 use crate::common::describe_cv;
-use crate::{DecodeError, Decoded, FieldInfo};
+use crate::{DecodeError, FieldInfo};
 
 /// Decodes the ISS value for a trapped WF* instruction.
-pub fn decode_iss_wf(iss: u64) -> Result<Decoded, DecodeError> {
+pub fn decode_iss_wf(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
     let cv = FieldInfo::get_bit(iss, "CV", 24).describe_bit(describe_cv);
     let cond = FieldInfo::get(iss, "COND", 20, 24);
     let res0a = FieldInfo::get(iss, "RES0", 10, 20).check_res0()?;
@@ -25,10 +25,7 @@ pub fn decode_iss_wf(iss: u64) -> Result<Decoded, DecodeError> {
     let rv = FieldInfo::get_bit(iss, "RV", 2).describe_bit(describe_rv);
     let ti = FieldInfo::get(iss, "TI", 0, 2).describe(describe_ti)?;
 
-    Ok(Decoded {
-        description: None,
-        fields: vec![cv, cond, res0a, rn, res0b, rv, ti],
-    })
+    Ok(vec![cv, cond, res0a, rn, res0b, rv, ti])
 }
 
 fn describe_rv(rv: bool) -> &'static str {

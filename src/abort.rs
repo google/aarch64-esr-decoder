@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::{DecodeError, Decoded, FieldInfo};
+use crate::{DecodeError, FieldInfo};
 use std::fmt::{self, Debug, Display, Formatter};
 
 /// Decodes the ISS value for an Instruction Abort.
-pub fn decode_iss_instruction_abort(iss: u64) -> Result<Decoded, DecodeError> {
+pub fn decode_iss_instruction_abort(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
     let res0a = FieldInfo::get(iss, "RES0", 13, 25).check_res0()?;
     let fnv = FieldInfo::get_bit(iss, "FnV", 10).describe_bit(describe_fnv);
     let ea = FieldInfo::get_bit(iss, "EA", 9);
@@ -31,14 +31,11 @@ pub fn decode_iss_instruction_abort(iss: u64) -> Result<Decoded, DecodeError> {
         FieldInfo::get(iss, "RES0", 11, 13)
     };
 
-    Ok(Decoded {
-        description: None,
-        fields: vec![res0a, set, fnv, ea, res0b, s1ptw, res0c, ifsc],
-    })
+    Ok(vec![res0a, set, fnv, ea, res0b, s1ptw, res0c, ifsc])
 }
 
 /// Decodes the ISS value for a Data Abort.
-pub fn decode_iss_data_abort(iss: u64) -> Result<Decoded, DecodeError> {
+pub fn decode_iss_data_abort(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
     let isv = FieldInfo::get_bit(iss, "ISV", 24).describe_bit(describe_isv);
 
     let intruction_syndrome_fields = if isv.as_bit() {
@@ -51,10 +48,7 @@ pub fn decode_iss_data_abort(iss: u64) -> Result<Decoded, DecodeError> {
             0b11 => SyndromeAccessSize::Doubleword,
             _ => unreachable!(),
         };
-        let sas = sas.with_decoded(Decoded {
-            description: Some(sas_value.to_string()),
-            fields: vec![],
-        });
+        let sas = sas.with_description(sas_value.to_string());
         let sse = FieldInfo::get_bit(iss, "SSE", 21);
         let srt = FieldInfo::get(iss, "SRT", 16, 21);
         let sf = FieldInfo::get_bit(iss, "SF", 15).describe_bit(describe_sf);
@@ -81,10 +75,7 @@ pub fn decode_iss_data_abort(iss: u64) -> Result<Decoded, DecodeError> {
     let mut fields = vec![isv];
     fields.extend(intruction_syndrome_fields);
     fields.extend(vec![vncr, set, fnv, ea, cm, s1ptw, wnr, dfsc]);
-    Ok(Decoded {
-        description: None,
-        fields,
-    })
+    Ok(fields)
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

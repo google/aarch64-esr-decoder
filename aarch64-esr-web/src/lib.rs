@@ -102,10 +102,7 @@ fn show_decoded(esr: u64, decoded: Result<Vec<FieldInfo>, DecodeError>) -> Resul
             row.set_attribute("class", "description")?;
             let mut last = 64;
             add_field_cells(&document, &row, &fields, &mut last, |field| {
-                field
-                    .decoded
-                    .as_ref()
-                    .and_then(|decoded| decoded.description.clone())
+                field.description.clone()
             })?;
             table.append_child(&row)?;
 
@@ -114,11 +111,9 @@ fn show_decoded(esr: u64, decoded: Result<Vec<FieldInfo>, DecodeError>) -> Resul
             row.set_attribute("class", "name")?;
             let mut last = 64;
             for field in &fields {
-                if let Some(field_decoded) = &field.decoded {
-                    add_field_cells(&document, &row, &field_decoded.fields, &mut last, |field| {
-                        Some(field.to_string())
-                    })?;
-                }
+                add_field_cells(&document, &row, &field.subfields, &mut last, |field| {
+                    Some(field.to_string())
+                })?;
             }
             table.append_child(&row)?;
 
@@ -127,14 +122,9 @@ fn show_decoded(esr: u64, decoded: Result<Vec<FieldInfo>, DecodeError>) -> Resul
             row.set_attribute("class", "description")?;
             let mut last = 64;
             for field in &fields {
-                if let Some(field_decoded) = &field.decoded {
-                    add_field_cells(&document, &row, &field_decoded.fields, &mut last, |field| {
-                        field
-                            .decoded
-                            .as_ref()
-                            .and_then(|decoded| decoded.description.clone())
-                    })?;
-                }
+                add_field_cells(&document, &row, &field.subfields, &mut last, |field| {
+                    field.description.clone()
+                })?;
             }
             table.append_child(&row)?;
         }

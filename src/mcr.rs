@@ -13,10 +13,10 @@
 // limitations under the License.
 
 use crate::common::describe_cv;
-use crate::{DecodeError, Decoded, FieldInfo};
+use crate::{DecodeError, FieldInfo};
 
 /// Decodes the ISS value for an MCR or MRC access.
-pub fn decode_iss_mcr(iss: u64) -> Result<Decoded, DecodeError> {
+pub fn decode_iss_mcr(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
     let cv = FieldInfo::get_bit(iss, "CV", 24).describe_bit(describe_cv);
     let cond = FieldInfo::get(iss, "COND", 20, 24);
     let opc2 = FieldInfo::get(iss, "Opc2", 17, 20);
@@ -26,14 +26,11 @@ pub fn decode_iss_mcr(iss: u64) -> Result<Decoded, DecodeError> {
     let crm = FieldInfo::get(iss, "CRm", 1, 5);
     let direction = FieldInfo::get_bit(iss, "Direction", 0).describe_bit(describe_direction);
 
-    Ok(Decoded {
-        description: None,
-        fields: vec![cv, cond, opc2, opc1, crn, rt, crm, direction],
-    })
+    Ok(vec![cv, cond, opc2, opc1, crn, rt, crm, direction])
 }
 
 /// Decodes the ISS value for an MCRR or MRRC access.
-pub fn decode_iss_mcrr(iss: u64) -> Result<Decoded, DecodeError> {
+pub fn decode_iss_mcrr(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
     let cv = FieldInfo::get_bit(iss, "CV", 24).describe_bit(describe_cv);
     let cond = FieldInfo::get(iss, "COND", 20, 24);
     let opc1 = FieldInfo::get(iss, "Opc2", 16, 20);
@@ -43,10 +40,7 @@ pub fn decode_iss_mcrr(iss: u64) -> Result<Decoded, DecodeError> {
     let crm = FieldInfo::get(iss, "CRm", 1, 5);
     let direction = FieldInfo::get_bit(iss, "Direction", 0).describe_bit(describe_direction);
 
-    Ok(Decoded {
-        description: None,
-        fields: vec![cv, cond, opc1, res0, rt2, rt, crm, direction],
-    })
+    Ok(vec![cv, cond, opc1, res0, rt2, rt, crm, direction])
 }
 
 fn describe_direction(direction: bool) -> &'static str {

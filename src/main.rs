@@ -43,12 +43,10 @@ fn print_decoded(fields: &[FieldInfo], level: usize) {
                 field
             );
         }
-        if let Some(field_decoded) = &field.decoded {
-            if let Some(description) = &field_decoded.description {
-                println!("{}  # {}", indentation, description);
-            }
-
-            print_decoded(&field_decoded.fields, level + 1);
+        if let Some(description) = &field.description {
+            println!("{}  # {}", indentation, description);
         }
+
+        print_decoded(&field.subfields, level + 1);
     }
 }

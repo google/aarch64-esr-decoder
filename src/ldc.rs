@@ -13,10 +13,10 @@
 // limitations under the License.
 
 use crate::common::describe_cv;
-use crate::{DecodeError, Decoded, FieldInfo};
+use crate::{DecodeError, FieldInfo};
 
 /// Decodes the ISS value for a trapped LDC or STC instruction.
-pub fn decode_iss_ldc(iss: u64) -> Result<Decoded, DecodeError> {
+pub fn decode_iss_ldc(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
     let cv = FieldInfo::get_bit(iss, "CV", 24).describe_bit(describe_cv);
     let cond = FieldInfo::get(iss, "COND", 20, 24);
     let imm8 = FieldInfo::get(iss, "imm8", 12, 20);
@@ -26,10 +26,7 @@ pub fn decode_iss_ldc(iss: u64) -> Result<Decoded, DecodeError> {
     let am = FieldInfo::get(iss, "AM", 1, 4).describe(describe_am)?;
     let direction = FieldInfo::get_bit(iss, "Direction", 0).describe_bit(describe_direction);
 
-    Ok(Decoded {
-        description: None,
-        fields: vec![cv, cond, imm8, res0, rn, offset, am, direction],
-    })
+    Ok(vec![cv, cond, imm8, res0, rn, offset, am, direction])
 }
 
 fn describe_offset(offset: bool) -> &'static str {
