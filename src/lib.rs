@@ -23,6 +23,7 @@ use bit_field::BitField;
 use ldc::decode_iss_ldc;
 use mcr::{decode_iss_mcr, decode_iss_mcrr};
 use std::fmt::{self, Debug, Display, Formatter};
+use std::num::ParseIntError;
 use thiserror::Error;
 use wf::decode_iss_wf;
 
@@ -297,5 +298,14 @@ mod tests {
                 ]
             }
         );
+    }
+}
+
+/// Parse a decimal or hexadecimal number.
+pub fn parse_number(s: &str) -> Result<u64, ParseIntError> {
+    if let Some(hex) = s.strip_prefix("0x") {
+        u64::from_str_radix(hex, 16)
+    } else {
+        s.parse()
     }
 }

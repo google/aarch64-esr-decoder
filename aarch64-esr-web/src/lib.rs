@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use aarch64_esr_decoder::{decode, DecodeError, Decoded, FieldInfo};
-use std::num::ParseIntError;
+use aarch64_esr_decoder::{decode, parse_number, DecodeError, Decoded, FieldInfo};
 use std::ops::Deref;
 use wasm_bindgen::prelude::*;
 use web_sys::{Document, Element};
@@ -185,13 +184,4 @@ where
         *last = field.start;
     }
     Ok(())
-}
-
-/// Parse a decimal or hexadecimal number.
-fn parse_number(s: &str) -> Result<u64, ParseIntError> {
-    if let Some(hex) = s.strip_prefix("0x") {
-        u64::from_str_radix(hex, 16)
-    } else {
-        s.parse()
-    }
 }

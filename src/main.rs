@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use aarch64_esr_decoder::{decode, Decoded};
-use std::{env, num::ParseIntError};
+use aarch64_esr_decoder::{decode, parse_number, Decoded};
+use std::env;
 
 fn main() {
     let args: Vec<_> = env::args().collect();
@@ -49,14 +49,5 @@ fn print_decoded(decoded: &Decoded, level: usize) {
         if let Some(field_decoded) = &field.decoded {
             print_decoded(field_decoded, level + 1);
         }
-    }
-}
-
-/// Parse a decimal or hexadecimal number.
-fn parse_number(s: &str) -> Result<u64, ParseIntError> {
-    if let Some(hex) = s.strip_prefix("0x") {
-        u64::from_str_radix(hex, 16)
-    } else {
-        s.parse()
     }
 }
