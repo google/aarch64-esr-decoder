@@ -19,6 +19,7 @@ mod hvc;
 mod ld64b;
 mod ldc;
 mod mcr;
+mod msr;
 mod sve;
 #[cfg(test)]
 mod tests;
@@ -31,6 +32,7 @@ use hvc::decode_iss_hvc;
 use ld64b::decode_iss_ld64b;
 use ldc::decode_iss_ldc;
 use mcr::{decode_iss_mcr, decode_iss_mcrr};
+use msr::decode_iss_msr;
 use std::fmt::{self, Debug, Display, Formatter};
 use std::num::ParseIntError;
 use sve::decode_iss_sve;
@@ -227,7 +229,7 @@ pub fn decode(esr: u64) -> Result<Vec<FieldInfo>, DecodeError> {
         ),
         0b011000 => (
             "Trapped MSR, MRS or System instruction execution in AArch64 state",
-            vec![],
+            decode_iss_msr(iss.value)?,
         ),
         0b011001 => (
             "Access to SVE functionality trapped as a result of CPACR_EL1.ZEN, CPTR_EL2.ZEN, \
