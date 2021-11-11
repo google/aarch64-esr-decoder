@@ -17,6 +17,7 @@
 - Added ISS decoding for LD64B/ST64B\* exceptions.
 - Added ISS decoding for Branch Target Exception.
 - Added ISS decoding for HVC and SVC exceptions.
+- Added ISS decoding for MRS and MSR exceptions, including system register names.
 
 ## 0.1.0
 
