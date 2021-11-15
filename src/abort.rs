@@ -17,18 +17,19 @@ use std::fmt::{self, Debug, Display, Formatter};
 
 /// Decodes the ISS value for an Instruction Abort.
 pub fn decode_iss_instruction_abort(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
-    let res0a = FieldInfo::get(iss, "RES0", 13, 25).check_res0()?;
-    let fnv = FieldInfo::get_bit(iss, "FnV", 10).describe_bit(describe_fnv);
-    let ea = FieldInfo::get_bit(iss, "EA", 9);
-    let res0b = FieldInfo::get_bit(iss, "RES0", 8).check_res0()?;
-    let s1ptw = FieldInfo::get_bit(iss, "S1PTW", 7);
-    let res0c = FieldInfo::get_bit(iss, "RES0", 6).check_res0()?;
-    let ifsc = FieldInfo::get(iss, "IFSC", 0, 6).describe(describe_fsc)?;
+    let res0a = FieldInfo::get(iss, "RES0", Some("Reserved"), 13, 25).check_res0()?;
+    let fnv = FieldInfo::get_bit(iss, "FnV", Some("FAR not Valid"), 10).describe_bit(describe_fnv);
+    let ea = FieldInfo::get_bit(iss, "EA", Some("External abort type"), 9);
+    let res0b = FieldInfo::get_bit(iss, "RES0", Some("Reserved"), 8).check_res0()?;
+    let s1ptw = FieldInfo::get_bit(iss, "S1PTW", Some("Stage-1 translation table walk"), 7);
+    let res0c = FieldInfo::get_bit(iss, "RES0", Some("Reserved"), 6).check_res0()?;
+    let ifsc = FieldInfo::get(iss, "IFSC", Some("Instruction Fault Status Code"), 0, 6)
+        .describe(describe_fsc)?;
 
     let set = if ifsc.value == 0b010000 {
-        FieldInfo::get(iss, "SET", 11, 13).describe(describe_set)?
+        FieldInfo::get(iss, "SET", Some("Synchronous Error Type"), 11, 13).describe(describe_set)?
     } else {
-        FieldInfo::get(iss, "RES0", 11, 13)
+        FieldInfo::get(iss, "RES0", Some("Reserved"), 11, 13)
     };
 
     Ok(vec![res0a, set, fnv, ea, res0b, s1ptw, res0c, ifsc])
@@ -36,11 +37,12 @@ pub fn decode_iss_instruction_abort(iss: u64) -> Result<Vec<FieldInfo>, DecodeEr
 
 /// Decodes the ISS value for a Data Abort.
 pub fn decode_iss_data_abort(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
-    let isv = FieldInfo::get_bit(iss, "ISV", 24).describe_bit(describe_isv);
+    let isv = FieldInfo::get_bit(iss, "ISV", Some("Instruction Syndrome Valid"), 24)
+        .describe_bit(describe_isv);
 
     let intruction_syndrome_fields = if isv.as_bit() {
         // These fields are part of the instruction syndrome, and are only valid if ISV is true.
-        let sas = FieldInfo::get(iss, "SAS", 22, 24);
+        let sas = FieldInfo::get(iss, "SAS", Some("Syndrome Access Size"), 22, 24);
         let sas_value = match sas.value {
             0b00 => SyndromeAccessSize::Byte,
             0b01 => SyndromeAccessSize::Halfword,
@@ -49,27 +51,29 @@ pub fn decode_iss_data_abort(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
             _ => unreachable!(),
         };
         let sas = sas.with_description(sas_value.to_string());
-        let sse = FieldInfo::get_bit(iss, "SSE", 21);
-        let srt = FieldInfo::get(iss, "SRT", 16, 21);
-        let sf = FieldInfo::get_bit(iss, "SF", 15).describe_bit(describe_sf);
-        let ar = FieldInfo::get_bit(iss, "AR", 14).describe_bit(describe_ar);
+        let sse = FieldInfo::get_bit(iss, "SSE", Some("Syndrome Sign Extend"), 21);
+        let srt = FieldInfo::get(iss, "SRT", Some("Syndrome Register Transfer"), 16, 21);
+        let sf = FieldInfo::get_bit(iss, "SF", Some("Sixty-Four"), 15).describe_bit(describe_sf);
+        let ar =
+            FieldInfo::get_bit(iss, "AR", Some("Acquire/Release"), 14).describe_bit(describe_ar);
         vec![sas, sse, srt, sf, ar]
     } else {
-        let res0 = FieldInfo::get(iss, "RES0", 14, 24).check_res0()?;
+        let res0 = FieldInfo::get(iss, "RES0", Some("Reserved"), 14, 24).check_res0()?;
         vec![res0]
     };
 
-    let vncr = FieldInfo::get_bit(iss, "VNCR", 13);
-    let fnv = FieldInfo::get_bit(iss, "FnV", 10).describe_bit(describe_fnv);
-    let ea = FieldInfo::get_bit(iss, "EA", 9);
-    let cm = FieldInfo::get_bit(iss, "CM", 8);
-    let s1ptw = FieldInfo::get_bit(iss, "S1PTW", 7);
-    let wnr = FieldInfo::get_bit(iss, "WnR", 6).describe_bit(describe_wnr);
-    let dfsc = FieldInfo::get(iss, "DFSC", 0, 6).describe(describe_fsc)?;
+    let vncr = FieldInfo::get_bit(iss, "VNCR", None, 13);
+    let fnv = FieldInfo::get_bit(iss, "FnV", Some("FAR not Valid"), 10).describe_bit(describe_fnv);
+    let ea = FieldInfo::get_bit(iss, "EA", Some("External abort type"), 9);
+    let cm = FieldInfo::get_bit(iss, "CM", Some("Cache Maintenance"), 8);
+    let s1ptw = FieldInfo::get_bit(iss, "S1PTW", Some("Stage-1 translation table walk"), 7);
+    let wnr = FieldInfo::get_bit(iss, "WnR", Some("Write not Read"), 6).describe_bit(describe_wnr);
+    let dfsc =
+        FieldInfo::get(iss, "DFSC", Some("Data Fault Status Code"), 0, 6).describe(describe_fsc)?;
     let set = if dfsc.value == 0b010000 {
-        FieldInfo::get(iss, "SET", 11, 13).describe(describe_set)?
+        FieldInfo::get(iss, "SET", Some("Synchronous Error Type"), 11, 13).describe(describe_set)?
     } else {
-        FieldInfo::get(iss, "RES0", 11, 13)
+        FieldInfo::get(iss, "RES0", Some("Reserved"), 11, 13)
     };
 
     let mut fields = vec![isv];

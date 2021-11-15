@@ -16,7 +16,7 @@ use crate::{DecodeError, FieldInfo};
 
 /// Decodes the ISS value for a trapped LD64B or ST64B* instruction.
 pub fn decode_iss_ld64b(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
-    let iss = FieldInfo::get(iss, "ISS", 0, 25).describe(describe_iss_ld64b)?;
+    let iss = FieldInfo::get(iss, "ISS", None, 0, 25).describe(describe_iss_ld64b)?;
     Ok(vec![iss])
 }
 

@@ -16,8 +16,8 @@ use crate::{DecodeError, FieldInfo};
 
 /// Decodes the ISS value for a Branch Target Exception.
 pub fn decode_iss_bti(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
-    let res0 = FieldInfo::get(iss, "RES0", 2, 25).check_res0()?;
-    let btype = FieldInfo::get(iss, "BTYPE", 0, 2);
+    let res0 = FieldInfo::get(iss, "RES0", Some("Reserved"), 2, 25).check_res0()?;
+    let btype = FieldInfo::get(iss, "BTYPE", Some("PSTATE.BTYPE value"), 0, 2);
 
     Ok(vec![res0, btype])
 }

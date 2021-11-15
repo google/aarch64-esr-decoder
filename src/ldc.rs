@@ -17,14 +17,45 @@ use crate::{DecodeError, FieldInfo};
 
 /// Decodes the ISS value for a trapped LDC or STC instruction.
 pub fn decode_iss_ldc(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
-    let cv = FieldInfo::get_bit(iss, "CV", 24).describe_bit(describe_cv);
-    let cond = FieldInfo::get(iss, "COND", 20, 24);
-    let imm8 = FieldInfo::get(iss, "imm8", 12, 20);
-    let res0 = FieldInfo::get(iss, "RES0", 10, 12).check_res0()?;
-    let rn = FieldInfo::get(iss, "Rn", 5, 10);
-    let offset = FieldInfo::get_bit(iss, "Offset", 4).describe_bit(describe_offset);
-    let am = FieldInfo::get(iss, "AM", 1, 4).describe(describe_am)?;
-    let direction = FieldInfo::get_bit(iss, "Direction", 0).describe_bit(describe_direction);
+    let cv =
+        FieldInfo::get_bit(iss, "CV", Some("Condition code valid"), 24).describe_bit(describe_cv);
+    let cond = FieldInfo::get(
+        iss,
+        "COND",
+        Some("Condition code of the trapped instruction"),
+        20,
+        24,
+    );
+    let imm8 = FieldInfo::get(
+        iss,
+        "imm8",
+        Some("Immediate value of the trapped instruction"),
+        12,
+        20,
+    );
+    let res0 = FieldInfo::get(iss, "RES0", Some("Reserved"), 10, 12).check_res0()?;
+    let rn = FieldInfo::get(
+        iss,
+        "Rn",
+        Some("General-purpose register number of the trapped instruction"),
+        5,
+        10,
+    );
+    let offset = FieldInfo::get_bit(
+        iss,
+        "Offset",
+        Some("Whether the offset is added or subtracted"),
+        4,
+    )
+    .describe_bit(describe_offset);
+    let am = FieldInfo::get(iss, "AM", Some("Addressing Mode"), 1, 4).describe(describe_am)?;
+    let direction = FieldInfo::get_bit(
+        iss,
+        "Direction",
+        Some("Direction of the trapped instruction"),
+        0,
+    )
+    .describe_bit(describe_direction);
 
     Ok(vec![cv, cond, imm8, res0, rn, offset, am, direction])
 }

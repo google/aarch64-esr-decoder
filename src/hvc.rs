@@ -16,8 +16,8 @@ use crate::{DecodeError, FieldInfo};
 
 /// Decodes the ISS value for an HVC or SVC exception.
 pub fn decode_iss_hvc(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
-    let res0 = FieldInfo::get(iss, "RES0", 16, 25).check_res0()?;
-    let imm16 = FieldInfo::get(iss, "imm16", 0, 16);
+    let res0 = FieldInfo::get(iss, "RES0", Some("Reserved"), 16, 25).check_res0()?;
+    let imm16 = FieldInfo::get(iss, "imm16", Some("Value of the immediate field"), 0, 16);
 
     Ok(vec![res0, imm16])
 }

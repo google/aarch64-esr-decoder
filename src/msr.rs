@@ -16,14 +16,26 @@ use crate::{DecodeError, FieldInfo};
 
 /// Decodes the ISS value for an MSR or MRS instruction.
 pub fn decode_iss_msr(iss: u64) -> Result<(Vec<FieldInfo>, Option<String>), DecodeError> {
-    let res0 = FieldInfo::get(iss, "RES0", 22, 25).check_res0()?;
-    let op0 = FieldInfo::get(iss, "Op0", 20, 22);
-    let op2 = FieldInfo::get(iss, "Op2", 17, 20);
-    let op1 = FieldInfo::get(iss, "Op1", 14, 17);
-    let crn = FieldInfo::get(iss, "CRn", 10, 14);
-    let rt = FieldInfo::get(iss, "Rt", 5, 10);
-    let crm = FieldInfo::get(iss, "CRm", 1, 5);
-    let direction = FieldInfo::get_bit(iss, "Direction", 0).describe_bit(describe_direction);
+    let res0 = FieldInfo::get(iss, "RES0", Some("Reserved"), 22, 25).check_res0()?;
+    let op0 = FieldInfo::get(iss, "Op0", None, 20, 22);
+    let op2 = FieldInfo::get(iss, "Op2", None, 17, 20);
+    let op1 = FieldInfo::get(iss, "Op1", None, 14, 17);
+    let crn = FieldInfo::get(iss, "CRn", None, 10, 14);
+    let rt = FieldInfo::get(
+        iss,
+        "Rt",
+        Some("General-purpose register number of the trapped instruction"),
+        5,
+        10,
+    );
+    let crm = FieldInfo::get(iss, "CRm", None, 1, 5);
+    let direction = FieldInfo::get_bit(
+        iss,
+        "Direction",
+        Some("Direction of the trapped instruction"),
+        0,
+    )
+    .describe_bit(describe_direction);
 
     let name = sysreg_name(op0.value, op1.value, op2.value, crn.value, crm.value);
     let description = if direction.value == 0 {

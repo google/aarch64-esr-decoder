@@ -17,9 +17,16 @@ use crate::{DecodeError, FieldInfo};
 
 /// Decodes the ISS value for a trapped SVE, Advanced SIMD or FP instruction.
 pub fn decode_iss_sve(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
-    let cv = FieldInfo::get_bit(iss, "CV", 24).describe_bit(describe_cv);
-    let cond = FieldInfo::get(iss, "COND", 20, 24);
-    let res0 = FieldInfo::get(iss, "RES0", 0, 20).check_res0()?;
+    let cv =
+        FieldInfo::get_bit(iss, "CV", Some("Condition code valid"), 24).describe_bit(describe_cv);
+    let cond = FieldInfo::get(
+        iss,
+        "COND",
+        Some("Condition code of the trapped instruction"),
+        20,
+        24,
+    );
+    let res0 = FieldInfo::get(iss, "RES0", Some("Reserved"), 0, 20).check_res0()?;
 
     Ok(vec![cv, cond, res0])
 }

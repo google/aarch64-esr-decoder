@@ -6,6 +6,7 @@
 
 - Removed `Decoded` struct, inlined its fields into `FieldInfo`.
 - `DecodeError` variants changed.
+- Added `long_name` to `FieldInfo` struct.
 
 ### Bugfixes
 

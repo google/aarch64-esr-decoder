@@ -44,6 +44,8 @@ use wf::decode_iss_wf;
 pub struct FieldInfo {
     /// The short name of the field, e.g. "ISS".
     pub name: &'static str,
+    /// The long name of the field, e.g. "Instruction Specific Syndrome".
+    pub long_name: Option<&'static str>,
     /// The index of the lowest bit of the field.
     pub start: usize,
     /// The number of bits in the field.
@@ -57,10 +59,17 @@ pub struct FieldInfo {
 }
 
 impl FieldInfo {
-    fn get(register: u64, name: &'static str, start: usize, end: usize) -> Self {
+    fn get(
+        register: u64,
+        name: &'static str,
+        long_name: Option<&'static str>,
+        start: usize,
+        end: usize,
+    ) -> Self {
         let value = register.get_bits(start..end);
         Self {
             name,
+            long_name,
             start,
             width: end - start,
             value,
@@ -69,8 +78,13 @@ impl FieldInfo {
         }
     }
 
-    fn get_bit(register: u64, name: &'static str, bit: usize) -> Self {
-        Self::get(register, name, bit, bit + 1)
+    fn get_bit(
+        register: u64,
+        name: &'static str,
+        long_name: Option<&'static str>,
+        bit: usize,
+    ) -> Self {
+        Self::get(register, name, long_name, bit, bit + 1)
     }
 
     fn with_description(self, description: String) -> Self {
@@ -173,7 +187,7 @@ pub enum DecodeError {
 }
 
 fn decode_iss_res0(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
-    let res0 = FieldInfo::get(iss, "RES0", 0, 25)
+    let res0 = FieldInfo::get(iss, "RES0", Some("Reserved"), 0, 25)
         .check_res0()?
         .with_description("ISS is RES0".to_string());
     Ok(vec![res0])
@@ -181,11 +195,12 @@ fn decode_iss_res0(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
 
 /// Decodes the given Exception Syndrome Register value, or returns an error if it is not valid.
 pub fn decode(esr: u64) -> Result<Vec<FieldInfo>, DecodeError> {
-    let res0 = FieldInfo::get(esr, "RES0", 37, 64).check_res0()?;
-    let iss2 = FieldInfo::get(esr, "ISS2", 32, 37);
-    let ec = FieldInfo::get(esr, "EC", 26, 32);
-    let il = FieldInfo::get_bit(esr, "IL", 25).describe_bit(describe_il);
-    let iss = FieldInfo::get(esr, "ISS", 0, 25);
+    let res0 = FieldInfo::get(esr, "RES0", Some("Reserved"), 37, 64).check_res0()?;
+    let iss2 = FieldInfo::get(esr, "ISS2", None, 32, 37);
+    let ec = FieldInfo::get(esr, "EC", Some("Exception Class"), 26, 32);
+    let il =
+        FieldInfo::get_bit(esr, "IL", Some("Instruction Length"), 25).describe_bit(describe_il);
+    let iss = FieldInfo::get(esr, "ISS", Some("Instruction Specific Syndrome"), 0, 25);
     let (class, iss_subfields, iss_description) = match ec.value {
         0b000000 => ("Unknown reason", decode_iss_res0(iss.value)?, None),
         0b000001 => (

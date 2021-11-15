@@ -23,6 +23,7 @@ fn unknown() {
         vec![
             FieldInfo {
                 name: "RES0",
+                long_name: Some("Reserved"),
                 start: 37,
                 width: 27,
                 value: 0,
@@ -31,6 +32,7 @@ fn unknown() {
             },
             FieldInfo {
                 name: "ISS2",
+                long_name: None,
                 start: 32,
                 width: 5,
                 value: 0,
@@ -39,6 +41,7 @@ fn unknown() {
             },
             FieldInfo {
                 name: "EC",
+                long_name: Some("Exception Class"),
                 start: 26,
                 width: 6,
                 value: 0,
@@ -47,6 +50,7 @@ fn unknown() {
             },
             FieldInfo {
                 name: "IL",
+                long_name: Some("Instruction Length"),
                 start: 25,
                 width: 1,
                 value: 0,
@@ -55,12 +59,14 @@ fn unknown() {
             },
             FieldInfo {
                 name: "ISS",
+                long_name: Some("Instruction Specific Syndrome"),
                 start: 0,
                 width: 25,
                 value: 0,
                 description: None,
                 subfields: vec![FieldInfo {
                     name: "RES0",
+                    long_name: Some("Reserved"),
                     start: 0,
                     width: 25,
                     value: 0,
@@ -79,6 +85,7 @@ fn data_abort() {
         vec![
             FieldInfo {
                 name: "RES0",
+                long_name: Some("Reserved"),
                 start: 37,
                 width: 27,
                 value: 0,
@@ -87,6 +94,7 @@ fn data_abort() {
             },
             FieldInfo {
                 name: "ISS2",
+                long_name: None,
                 start: 32,
                 width: 5,
                 value: 0,
@@ -95,6 +103,7 @@ fn data_abort() {
             },
             FieldInfo {
                 name: "EC",
+                long_name: Some("Exception Class"),
                 start: 26,
                 width: 6,
                 value: 37,
@@ -105,6 +114,7 @@ fn data_abort() {
             },
             FieldInfo {
                 name: "IL",
+                long_name: Some("Instruction Length"),
                 start: 25,
                 width: 1,
                 value: 1,
@@ -113,6 +123,7 @@ fn data_abort() {
             },
             FieldInfo {
                 name: "ISS",
+                long_name: Some("Instruction Specific Syndrome"),
                 start: 0,
                 width: 25,
                 value: 80,
@@ -120,6 +131,7 @@ fn data_abort() {
                 subfields: vec![
                     FieldInfo {
                         name: "ISV",
+                        long_name: Some("Instruction Syndrome Valid"),
                         start: 24,
                         width: 1,
                         value: 0,
@@ -128,6 +140,7 @@ fn data_abort() {
                     },
                     FieldInfo {
                         name: "RES0",
+                        long_name: Some("Reserved"),
                         start: 14,
                         width: 10,
                         value: 0,
@@ -136,6 +149,7 @@ fn data_abort() {
                     },
                     FieldInfo {
                         name: "VNCR",
+                        long_name: None,
                         start: 13,
                         width: 1,
                         value: 0,
@@ -144,6 +158,7 @@ fn data_abort() {
                     },
                     FieldInfo {
                         name: "SET",
+                        long_name: Some("Synchronous Error Type"),
                         start: 11,
                         width: 2,
                         value: 0,
@@ -152,6 +167,7 @@ fn data_abort() {
                     },
                     FieldInfo {
                         name: "FnV",
+                        long_name: Some("FAR not Valid"),
                         start: 10,
                         width: 1,
                         value: 0,
@@ -160,6 +176,7 @@ fn data_abort() {
                     },
                     FieldInfo {
                         name: "EA",
+                        long_name: Some("External abort type"),
                         start: 9,
                         width: 1,
                         value: 0,
@@ -168,6 +185,7 @@ fn data_abort() {
                     },
                     FieldInfo {
                         name: "CM",
+                        long_name: Some("Cache Maintenance"),
                         start: 8,
                         width: 1,
                         value: 0,
@@ -176,6 +194,7 @@ fn data_abort() {
                     },
                     FieldInfo {
                         name: "S1PTW",
+                        long_name: Some("Stage-1 translation table walk"),
                         start: 7,
                         width: 1,
                         value: 0,
@@ -184,6 +203,7 @@ fn data_abort() {
                     },
                     FieldInfo {
                         name: "WnR",
+                        long_name: Some("Write not Read"),
                         start: 6,
                         width: 1,
                         value: 1,
@@ -192,6 +212,7 @@ fn data_abort() {
                     },
                     FieldInfo {
                         name: "DFSC",
+                        long_name: Some("Data Fault Status Code"),
                         start: 0,
                         width: 6,
                         value: 16,
@@ -215,6 +236,7 @@ fn data_abort_isv() {
         vec![
             FieldInfo {
                 name: "RES0",
+                long_name: Some("Reserved"),
                 start: 37,
                 width: 27,
                 value: 0,
@@ -223,6 +245,7 @@ fn data_abort_isv() {
             },
             FieldInfo {
                 name: "ISS2",
+                long_name: None,
                 start: 32,
                 width: 5,
                 value: 0,
@@ -231,6 +254,7 @@ fn data_abort_isv() {
             },
             FieldInfo {
                 name: "EC",
+                long_name: Some("Exception Class"),
                 start: 26,
                 width: 6,
                 value: 37,
@@ -241,6 +265,7 @@ fn data_abort_isv() {
             },
             FieldInfo {
                 name: "IL",
+                long_name: Some("Instruction Length"),
                 start: 25,
                 width: 1,
                 value: 1,
@@ -249,6 +274,7 @@ fn data_abort_isv() {
             },
             FieldInfo {
                 name: "ISS",
+                long_name: Some("Instruction Specific Syndrome"),
                 start: 0,
                 width: 25,
                 value: 22163536,
@@ -256,6 +282,7 @@ fn data_abort_isv() {
                 subfields: vec![
                     FieldInfo {
                         name: "ISV",
+                        long_name: Some("Instruction Syndrome Valid"),
                         start: 24,
                         width: 1,
                         value: 1,
@@ -264,6 +291,7 @@ fn data_abort_isv() {
                     },
                     FieldInfo {
                         name: "SAS",
+                        long_name: Some("Syndrome Access Size"),
                         start: 22,
                         width: 2,
                         value: 1,
@@ -272,6 +300,7 @@ fn data_abort_isv() {
                     },
                     FieldInfo {
                         name: "SSE",
+                        long_name: Some("Syndrome Sign Extend"),
                         start: 21,
                         width: 1,
                         value: 0,
@@ -280,6 +309,7 @@ fn data_abort_isv() {
                     },
                     FieldInfo {
                         name: "SRT",
+                        long_name: Some("Syndrome Register Transfer"),
                         start: 16,
                         width: 5,
                         value: 18,
@@ -288,6 +318,7 @@ fn data_abort_isv() {
                     },
                     FieldInfo {
                         name: "SF",
+                        long_name: Some("Sixty-Four"),
                         start: 15,
                         width: 1,
                         value: 0,
@@ -296,6 +327,7 @@ fn data_abort_isv() {
                     },
                     FieldInfo {
                         name: "AR",
+                        long_name: Some("Acquire/Release"),
                         start: 14,
                         width: 1,
                         value: 0,
@@ -304,6 +336,7 @@ fn data_abort_isv() {
                     },
                     FieldInfo {
                         name: "VNCR",
+                        long_name: None,
                         start: 13,
                         width: 1,
                         value: 1,
@@ -312,6 +345,7 @@ fn data_abort_isv() {
                     },
                     FieldInfo {
                         name: "SET",
+                        long_name: Some("Synchronous Error Type"),
                         start: 11,
                         width: 2,
                         value: 2,
@@ -320,6 +354,7 @@ fn data_abort_isv() {
                     },
                     FieldInfo {
                         name: "FnV",
+                        long_name: Some("FAR not Valid"),
                         start: 10,
                         width: 1,
                         value: 0,
@@ -328,6 +363,7 @@ fn data_abort_isv() {
                     },
                     FieldInfo {
                         name: "EA",
+                        long_name: Some("External abort type"),
                         start: 9,
                         width: 1,
                         value: 0,
@@ -336,6 +372,7 @@ fn data_abort_isv() {
                     },
                     FieldInfo {
                         name: "CM",
+                        long_name: Some("Cache Maintenance"),
                         start: 8,
                         width: 1,
                         value: 0,
@@ -344,6 +381,7 @@ fn data_abort_isv() {
                     },
                     FieldInfo {
                         name: "S1PTW",
+                        long_name: Some("Stage-1 translation table walk"),
                         start: 7,
                         width: 1,
                         value: 0,
@@ -352,6 +390,7 @@ fn data_abort_isv() {
                     },
                     FieldInfo {
                         name: "WnR",
+                        long_name: Some("Write not Read"),
                         start: 6,
                         width: 1,
                         value: 1,
@@ -360,6 +399,7 @@ fn data_abort_isv() {
                     },
                     FieldInfo {
                         name: "DFSC",
+                        long_name: Some("Data Fault Status Code"),
                         start: 0,
                         width: 6,
                         value: 16,
@@ -383,6 +423,7 @@ fn instruction_abort() {
         vec![
             FieldInfo {
                 name: "RES0",
+                long_name: Some("Reserved"),
                 start: 37,
                 width: 27,
                 value: 0,
@@ -391,6 +432,7 @@ fn instruction_abort() {
             },
             FieldInfo {
                 name: "ISS2",
+                long_name: None,
                 start: 32,
                 width: 5,
                 value: 0,
@@ -399,6 +441,7 @@ fn instruction_abort() {
             },
             FieldInfo {
                 name: "EC",
+                long_name: Some("Exception Class"),
                 start: 26,
                 width: 6,
                 value: 32,
@@ -407,6 +450,7 @@ fn instruction_abort() {
             },
             FieldInfo {
                 name: "IL",
+                long_name: Some("Instruction Length"),
                 start: 25,
                 width: 1,
                 value: 1,
@@ -415,6 +459,7 @@ fn instruction_abort() {
             },
             FieldInfo {
                 name: "ISS",
+                long_name: Some("Instruction Specific Syndrome"),
                 start: 0,
                 width: 25,
                 value: 7696,
@@ -422,6 +467,7 @@ fn instruction_abort() {
                 subfields: vec![
                     FieldInfo {
                         name: "RES0",
+                        long_name: Some("Reserved"),
                         start: 13,
                         width: 12,
                         value: 0,
@@ -430,6 +476,7 @@ fn instruction_abort() {
                     },
                     FieldInfo {
                         name: "SET",
+                        long_name: Some("Synchronous Error Type"),
                         start: 11,
                         width: 2,
                         value: 3,
@@ -438,6 +485,7 @@ fn instruction_abort() {
                     },
                     FieldInfo {
                         name: "FnV",
+                        long_name: Some("FAR not Valid"),
                         start: 10,
                         width: 1,
                         value: 1,
@@ -448,6 +496,7 @@ fn instruction_abort() {
                     },
                     FieldInfo {
                         name: "EA",
+                        long_name: Some("External abort type"),
                         start: 9,
                         width: 1,
                         value: 1,
@@ -456,6 +505,7 @@ fn instruction_abort() {
                     },
                     FieldInfo {
                         name: "RES0",
+                        long_name: Some("Reserved"),
                         start: 8,
                         width: 1,
                         value: 0,
@@ -464,6 +514,7 @@ fn instruction_abort() {
                     },
                     FieldInfo {
                         name: "S1PTW",
+                        long_name: Some("Stage-1 translation table walk"),
                         start: 7,
                         width: 1,
                         value: 0,
@@ -472,6 +523,7 @@ fn instruction_abort() {
                     },
                     FieldInfo {
                         name: "RES0",
+                        long_name: Some("Reserved"),
                         start: 6,
                         width: 1,
                         value: 0,
@@ -480,6 +532,7 @@ fn instruction_abort() {
                     },
                     FieldInfo {
                         name: "IFSC",
+                        long_name: Some("Instruction Fault Status Code"),
                         start: 0,
                         width: 6,
                         value: 16,
@@ -503,6 +556,7 @@ fn sve() {
         vec![
             FieldInfo {
                 name: "RES0",
+                long_name: Some("Reserved"),
                 start: 37,
                 width: 27,
                 value: 0,
@@ -511,6 +565,7 @@ fn sve() {
             },
             FieldInfo {
                 name: "ISS2",
+                long_name: None,
                 start: 32,
                 width: 5,
                 value: 0,
@@ -519,6 +574,7 @@ fn sve() {
             },
             FieldInfo {
                 name: "EC",
+                long_name: Some("Exception Class"),
                 start: 26,
                 width: 6,
                 value: 7,
@@ -529,6 +585,7 @@ fn sve() {
             },
             FieldInfo {
                 name: "IL",
+                long_name: Some("Instruction Length"),
                 start: 25,
                 width: 1,
                 value: 1,
@@ -537,6 +594,7 @@ fn sve() {
             },
             FieldInfo {
                 name: "ISS",
+                long_name: Some("Instruction Specific Syndrome"),
                 start: 0,
                 width: 25,
                 value: 19922944,
@@ -544,6 +602,7 @@ fn sve() {
                 subfields: vec![
                     FieldInfo {
                         name: "CV",
+                        long_name: Some("Condition code valid"),
                         start: 24,
                         width: 1,
                         value: 1,
@@ -552,6 +611,7 @@ fn sve() {
                     },
                     FieldInfo {
                         name: "COND",
+                        long_name: Some("Condition code of the trapped instruction"),
                         start: 20,
                         width: 4,
                         value: 3,
@@ -560,6 +620,7 @@ fn sve() {
                     },
                     FieldInfo {
                         name: "RES0",
+                        long_name: Some("Reserved"),
                         start: 0,
                         width: 20,
                         value: 0,
@@ -579,6 +640,7 @@ fn ld64b() {
         vec![
             FieldInfo {
                 name: "RES0",
+                long_name: Some("Reserved"),
                 start: 37,
                 width: 27,
                 value: 0,
@@ -587,6 +649,7 @@ fn ld64b() {
             },
             FieldInfo {
                 name: "ISS2",
+                long_name: None,
                 start: 32,
                 width: 5,
                 value: 0,
@@ -595,6 +658,7 @@ fn ld64b() {
             },
             FieldInfo {
                 name: "EC",
+                long_name: Some("Exception Class"),
                 start: 26,
                 width: 6,
                 value: 10,
@@ -606,6 +670,7 @@ fn ld64b() {
             },
             FieldInfo {
                 name: "IL",
+                long_name: Some("Instruction Length"),
                 start: 25,
                 width: 1,
                 value: 1,
@@ -614,12 +679,14 @@ fn ld64b() {
             },
             FieldInfo {
                 name: "ISS",
+                long_name: Some("Instruction Specific Syndrome"),
                 start: 0,
                 width: 25,
                 value: 2,
                 description: None,
                 subfields: vec![FieldInfo {
                     name: "ISS",
+                    long_name: None,
                     start: 0,
                     width: 25,
                     value: 2,
