@@ -14,26 +14,32 @@
 
 use aarch64_esr_decoder::{decode, parse_number, FieldInfo};
 use std::env;
+use std::process::exit;
 
 fn main() {
-    let args: Vec<_> = env::args().collect();
-    if args.len() != 2 {
-        eprintln!("Usage:");
-        eprintln!("  {} <ESR value>", args[0]);
-        return;
-    }
+    let args = match parse_args() {
+        Ok(args) => args,
+        Err(error_code) => exit(error_code),
+    };
 
-    let esr = parse_number(&args[1]).unwrap();
+    let esr = parse_number(&args.esr).unwrap();
     let decoded = decode(esr).unwrap();
     println!("ESR {:#034x}:", esr);
-    print_decoded(&decoded, 0);
+    print_decoded(&decoded, args.verbose, 0);
 }
 
-fn print_decoded(fields: &[FieldInfo], level: usize) {
+fn print_decoded(fields: &[FieldInfo], verbose: bool, level: usize) {
     let indentation = " ".repeat(level * 2);
     for field in fields {
+        let verbose_name = match field.long_name {
+            Some(long_name) if verbose => format!(" ({})", long_name),
+            _ => "".to_string(),
+        };
         if field.width == 1 {
-            println!("{}{:02}     {}", indentation, field.start, field);
+            println!(
+                "{}{:02}     {}{}",
+                indentation, field.start, field, verbose_name
+            );
         } else {
             println!(
                 "{}{:02}..{:02} {}",
@@ -47,6 +53,33 @@ fn print_decoded(fields: &[FieldInfo], level: usize) {
             println!("{}  # {}", indentation, description);
         }
 
-        print_decoded(&field.subfields, level + 1);
+        print_decoded(&field.subfields, verbose, level + 1);
     }
+}
+
+/// Parse and return command-line arguments, or an error code to return.
+fn parse_args() -> Result<Args, i32> {
+    let mut args: Vec<_> = env::args().collect();
+    match args.len() {
+        2 => Ok(Args {
+            verbose: false,
+            esr: args.remove(1),
+        }),
+        3 => Ok(Args {
+            verbose: true,
+            esr: args.remove(2),
+        }),
+        _ => {
+            eprintln!("Usage:");
+            eprintln!("  {} [-v] <ESR value>", args[0]);
+            Err(1)
+        }
+    }
+}
+
+/// Command-line arguments.
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct Args {
+    verbose: bool,
+    esr: String,
 }
