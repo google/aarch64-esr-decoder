@@ -71,7 +71,7 @@ fn show_decoded(esr: u64, decoded: Result<Vec<FieldInfo>, DecodeError>) -> Resul
     row.set_attribute("class", "value")?;
     let esr_hex = format!("{:016x}", esr);
     for digit in esr_hex.chars() {
-        let cell = make_cell(&document, Some(&digit.to_string()), 4)?;
+        let cell = make_cell(&document, Some(&digit.to_string()), None, 4)?;
         row.append_child(&cell)?;
     }
     table.append_child(&row)?;
@@ -81,7 +81,7 @@ fn show_decoded(esr: u64, decoded: Result<Vec<FieldInfo>, DecodeError>) -> Resul
     row.set_attribute("class", "value")?;
     for i in (0..u64::BITS).rev() {
         let bit = esr & (1 << i) != 0;
-        let cell = make_cell(&document, Some(if bit { "1" } else { "0" }), 1)?;
+        let cell = make_cell(&document, Some(if bit { "1" } else { "0" }), None, 1)?;
         row.append_child(&cell)?;
     }
     table.append_child(&row)?;
@@ -92,18 +92,28 @@ fn show_decoded(esr: u64, decoded: Result<Vec<FieldInfo>, DecodeError>) -> Resul
             let row = document.create_element("tr")?;
             row.set_attribute("class", "name")?;
             let mut last = 64;
-            add_field_cells(&document, &row, &fields, &mut last, |field| {
-                Some(field.to_string())
-            })?;
+            add_field_cells(
+                &document,
+                &row,
+                &fields,
+                &mut last,
+                |field| Some(field.to_string()),
+                |field| field.long_name,
+            )?;
             table.append_child(&row)?;
 
             // Top-level field descriptions
             let row = document.create_element("tr")?;
             row.set_attribute("class", "description")?;
             let mut last = 64;
-            add_field_cells(&document, &row, &fields, &mut last, |field| {
-                field.description.clone()
-            })?;
+            add_field_cells(
+                &document,
+                &row,
+                &fields,
+                &mut last,
+                |field| field.description.clone(),
+                |_| None,
+            )?;
             table.append_child(&row)?;
 
             // Second level field names and values
@@ -111,9 +121,14 @@ fn show_decoded(esr: u64, decoded: Result<Vec<FieldInfo>, DecodeError>) -> Resul
             row.set_attribute("class", "name")?;
             let mut last = 64;
             for field in &fields {
-                add_field_cells(&document, &row, &field.subfields, &mut last, |field| {
-                    Some(field.to_string())
-                })?;
+                add_field_cells(
+                    &document,
+                    &row,
+                    &field.subfields,
+                    &mut last,
+                    |field| Some(field.to_string()),
+                    |field| field.long_name,
+                )?;
             }
             table.append_child(&row)?;
 
@@ -122,9 +137,14 @@ fn show_decoded(esr: u64, decoded: Result<Vec<FieldInfo>, DecodeError>) -> Resul
             row.set_attribute("class", "description")?;
             let mut last = 64;
             for field in &fields {
-                add_field_cells(&document, &row, &field.subfields, &mut last, |field| {
-                    field.description.clone()
-                })?;
+                add_field_cells(
+                    &document,
+                    &row,
+                    &field.subfields,
+                    &mut last,
+                    |field| field.description.clone(),
+                    |_| None,
+                )?;
             }
             table.append_child(&row)?;
         }
@@ -137,32 +157,47 @@ fn show_decoded(esr: u64, decoded: Result<Vec<FieldInfo>, DecodeError>) -> Resul
 fn make_cell(
     document: &Document,
     contents: Option<&str>,
+    hover_title: Option<&str>,
     colspan: usize,
 ) -> Result<Element, JsValue> {
     let cell = document.create_element("td")?;
     cell.set_attribute("colspan", &colspan.to_string())?;
-    cell.set_text_content(contents);
+    if let Some(title) = hover_title {
+        let abbr = document.create_element("abbr")?;
+        abbr.set_attribute("title", title)?;
+        abbr.set_text_content(contents);
+        cell.append_child(&abbr)?;
+    } else {
+        cell.set_text_content(contents);
+    }
     Ok(cell)
 }
 
-fn add_field_cells<F, S>(
+fn add_field_cells<F, G, S>(
     document: &Document,
     row: &Element,
     fields: &[FieldInfo],
     last: &mut usize,
     get_contents: F,
+    get_hover_title: G,
 ) -> Result<(), JsValue>
 where
     F: Fn(&FieldInfo) -> Option<S>,
+    G: Fn(&FieldInfo) -> Option<&str>,
     S: Deref<Target = str>,
 {
     for field in fields {
         if field.start + field.width != *last {
             // Add a filler
-            let cell = make_cell(document, None, *last - field.start - field.width)?;
+            let cell = make_cell(document, None, None, *last - field.start - field.width)?;
             row.append_child(&cell)?;
         }
-        let cell = make_cell(document, get_contents(field).as_deref(), field.width)?;
+        let cell = make_cell(
+            document,
+            get_contents(field).as_deref(),
+            get_hover_title(field).as_deref(),
+            field.width,
+        )?;
         row.append_child(&cell)?;
         *last = field.start;
     }
