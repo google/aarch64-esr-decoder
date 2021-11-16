@@ -15,6 +15,7 @@
 mod abort;
 mod bti;
 mod common;
+mod fp;
 mod hvc;
 mod ld64b;
 mod ldc;
@@ -29,6 +30,7 @@ mod wf;
 use abort::{decode_iss_data_abort, decode_iss_instruction_abort};
 use bit_field::BitField;
 use bti::decode_iss_bti;
+use fp::decode_iss_fp;
 use hvc::decode_iss_hvc;
 use ld64b::decode_iss_ld64b;
 use ldc::decode_iss_ldc;
@@ -308,12 +310,12 @@ pub fn decode(esr: u64) -> Result<Vec<FieldInfo>, DecodeError> {
         ),
         0b101000 => (
             "Trapped floating-point exception taken from AArch32 state",
-            vec![],
+            decode_iss_fp(iss.value)?,
             None,
         ),
         0b101100 => (
             "Trapped floating-point exception taken from AArch64 state",
-            vec![],
+            decode_iss_fp(iss.value)?,
             None,
         ),
         0b101111 => ("SError interrupt", vec![], None),
