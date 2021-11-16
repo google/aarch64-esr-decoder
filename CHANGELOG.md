@@ -22,6 +22,7 @@
 - Added ISS decoding for Pointer Authentication failures.
 - Added ISS decoding for floating-point exceptions.
 - Added ISS decoding for SError interrupts.
+- Added ISS decoding for Breakpoint, Watchpoint, Software Step and Vector Catch exceptions.
 
 ## 0.1.0
 

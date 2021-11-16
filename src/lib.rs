@@ -13,6 +13,7 @@
 // limitations under the License.
 
 mod abort;
+mod breakpoint;
 mod bti;
 mod common;
 mod fp;
@@ -30,6 +31,10 @@ mod wf;
 
 use abort::{decode_iss_data_abort, decode_iss_instruction_abort};
 use bit_field::BitField;
+use breakpoint::{
+    decode_iss_breakpoint, decode_iss_breakpoint_vector_catch, decode_iss_software_step,
+    decode_iss_watchpoint,
+};
 use bti::decode_iss_bti;
 use fp::decode_iss_fp;
 use hvc::decode_iss_hvc;
@@ -326,36 +331,44 @@ pub fn decode(esr: u64) -> Result<Vec<FieldInfo>, DecodeError> {
         0b101111 => ("SError interrupt", decode_iss_serror(iss.value)?, None),
         0b110000 => (
             "Breakpoint exception from a lower Exception level",
-            vec![],
+            decode_iss_breakpoint_vector_catch(iss.value)?,
             None,
         ),
         0b110001 => (
             "Breakpoint exception taken without a change in Exception level",
-            vec![],
+            decode_iss_breakpoint_vector_catch(iss.value)?,
             None,
         ),
         0b110010 => (
             "Software Step exception from a lower Exception level",
-            vec![],
+            decode_iss_software_step(iss.value)?,
             None,
         ),
         0b110011 => (
             "Software Step exception taken without a change in Exception level",
-            vec![],
+            decode_iss_software_step(iss.value)?,
             None,
         ),
         0b110100 => (
             "Watchpoint exception from a lower Exception level",
-            vec![],
+            decode_iss_watchpoint(iss.value)?,
             None,
         ),
         0b110101 => (
             "Watchpoint exception taken without a change in Exception level",
-            vec![],
+            decode_iss_watchpoint(iss.value)?,
             None,
         ),
-        0b111000 => ("BKPT instruction execution in AArch32 state", vec![], None),
-        0b111100 => ("BRK instruction execution in AArch64 state", vec![], None),
+        0b111000 => (
+            "BKPT instruction execution in AArch32 state",
+            decode_iss_breakpoint(iss.value)?,
+            None,
+        ),
+        0b111100 => (
+            "BRK instruction execution in AArch64 state",
+            decode_iss_breakpoint(iss.value)?,
+            None,
+        ),
         _ => return Err(DecodeError::InvalidEc { ec: ec.value }),
     };
     let iss = FieldInfo {
