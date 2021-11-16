@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "aarch64-esr-decoder"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "bit_field",
  "thiserror",
