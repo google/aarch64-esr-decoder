@@ -19,6 +19,7 @@
 - Added ISS decoding for Branch Target Exception.
 - Added ISS decoding for HVC and SVC exceptions.
 - Added ISS decoding for MRS and MSR exceptions, including system register names.
+- Added ISS decoding for Pointer Authentication failures.
 
 ## 0.1.0
 

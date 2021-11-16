@@ -20,6 +20,7 @@ mod ld64b;
 mod ldc;
 mod mcr;
 mod msr;
+mod pauth;
 mod sve;
 #[cfg(test)]
 mod tests;
@@ -33,6 +34,7 @@ use ld64b::decode_iss_ld64b;
 use ldc::decode_iss_ldc;
 use mcr::{decode_iss_mcr, decode_iss_mcrr};
 use msr::decode_iss_msr;
+use pauth::decode_iss_pauth;
 use std::fmt::{self, Debug, Display, Formatter};
 use std::num::ParseIntError;
 use sve::decode_iss_sve;
@@ -271,7 +273,7 @@ pub fn decode(esr: u64) -> Result<Vec<FieldInfo>, DecodeError> {
         ),
         0b011100 => (
             "Exception from a Pointer Authentication instruction authentication failure",
-            vec![],
+            decode_iss_pauth(iss.value)?,
             None,
         ),
         0b100000 => (
