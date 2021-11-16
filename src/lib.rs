@@ -22,6 +22,7 @@ mod ldc;
 mod mcr;
 mod msr;
 mod pauth;
+mod serror;
 mod sve;
 #[cfg(test)]
 mod tests;
@@ -37,6 +38,7 @@ use ldc::decode_iss_ldc;
 use mcr::{decode_iss_mcr, decode_iss_mcrr};
 use msr::decode_iss_msr;
 use pauth::decode_iss_pauth;
+use serror::decode_iss_serror;
 use std::fmt::{self, Debug, Display, Formatter};
 use std::num::ParseIntError;
 use sve::decode_iss_sve;
@@ -182,6 +184,9 @@ pub enum DecodeError {
     /// The SET field had an invalid value.
     #[error("Invalid SET {set:#x}")]
     InvalidSet { set: u64 },
+    /// The AET field had an invalid value.
+    #[error("Invalid AET {aet:#x}")]
+    InvalidAet { aet: u64 },
     /// The AM field had an invalid value.
     #[error("Invalid AM {am:#x}")]
     InvalidAm { am: u64 },
@@ -318,7 +323,7 @@ pub fn decode(esr: u64) -> Result<Vec<FieldInfo>, DecodeError> {
             decode_iss_fp(iss.value)?,
             None,
         ),
-        0b101111 => ("SError interrupt", vec![], None),
+        0b101111 => ("SError interrupt", decode_iss_serror(iss.value)?, None),
         0b110000 => (
             "Breakpoint exception from a lower Exception level",
             vec![],
