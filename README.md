@@ -10,7 +10,7 @@ This is not an officially supported Google product.
 ## Usage
 
 Install a Debian package from the
-[latest release](https://github.com/google/aarch64-esr-decoder/releases/tag/0.1.0), install with
+[latest release](https://github.com/google/aarch64-esr-decoder/releases/tag/0.2.0), install with
 `cargo install aarch64-esr-decoder`, or
 [try the web version](https://google.github.io/aarch64-esr-decoder/).
 
@@ -44,6 +44,8 @@ ESR 0x00000000000000000000000096000050:
   00..05 DFSC: 0x10 0b010000
     # Synchronous External abort, not on translation table walk or hardware update of translation table.
 ```
+
+For long field names, add `-v`.
 
 ## License
 
