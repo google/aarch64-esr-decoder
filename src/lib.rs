@@ -13,9 +13,11 @@
 // limitations under the License.
 
 mod esr;
+mod midr;
 
 use bit_field::BitField;
 pub use esr::decode;
+pub use midr::decode_midr;
 use std::fmt::{self, Debug, Display, Formatter};
 use std::num::ParseIntError;
 use thiserror::Error;
