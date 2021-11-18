@@ -1,19 +1,5 @@
-use super::{decode, parse_number, FieldInfo};
-
-#[test]
-fn parse_decimal() {
-    assert_eq!(parse_number("12345"), Ok(12345));
-}
-
-#[test]
-fn parse_hex() {
-    assert_eq!(parse_number("0x123abc"), Ok(0x123abc));
-}
-
-#[test]
-fn parse_invalid() {
-    assert!(parse_number("123abc").is_err());
-}
+use super::decode;
+use crate::FieldInfo;
 
 #[test]
 fn unknown() {
