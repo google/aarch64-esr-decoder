@@ -42,11 +42,12 @@ fn print_decoded(fields: &[FieldInfo], verbose: bool, level: usize) {
             );
         } else {
             println!(
-                "{}{:02}..{:02} {}",
+                "{}{:02}..{:02} {}{}",
                 indentation,
                 field.start,
                 field.start + field.width - 1,
-                field
+                field,
+                verbose_name,
             );
         }
         if let Some(description) = &field.description {
