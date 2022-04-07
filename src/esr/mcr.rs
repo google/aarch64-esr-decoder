@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::common::describe_cv;
+use super::common::describe_cv;
 use crate::{DecodeError, FieldInfo};
 
 /// Decodes the ISS value for an MCR or MRC access.

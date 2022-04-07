@@ -14,17 +14,34 @@
 
 import * as wasm from "aarch64-esr-web";
 
-wasm.init()
+wasm.init();
 
 const esr = document.getElementById("esr");
-esr.oninput = () => {
+if (esr != null) {
+  esr.oninput = () => {
     if (esr.value.length > 0) {
-        wasm.decode_esr(esr.value)
+      wasm.decode_esr(esr.value);
     }
-    window.location.hash = esr.value
-};
+    window.location.hash = esr.value;
+  };
 
-if (window.location.hash) {
-    esr.value = window.location.hash.substring(1)
-    wasm.decode_esr(esr.value)
+  if (window.location.hash) {
+    esr.value = window.location.hash.substring(1);
+    wasm.decode_esr(esr.value);
+  }
+}
+
+const midr = document.getElementById("midr");
+if (midr != null) {
+  midr.oninput = () => {
+    if (midr.value.length > 0) {
+      wasm.decode_midr(midr.value);
+    }
+    window.location.hash = midr.value;
+  };
+
+  if (window.location.hash) {
+    midr.value = window.location.hash.substring(1);
+    wasm.decode_midr(midr.value);
+  }
 }

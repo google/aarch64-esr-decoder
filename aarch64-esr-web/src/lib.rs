@@ -35,6 +35,18 @@ pub fn decode_esr(esr: &str) -> Result<(), JsValue> {
     Ok(())
 }
 
+#[wasm_bindgen]
+pub fn decode_midr(midr: &str) -> Result<(), JsValue> {
+    match parse_number(midr) {
+        Ok(midr) => {
+            let decoded = aarch64_esr_decoder::decode_midr(midr);
+            show_decoded(midr, decoded)?;
+        }
+        Err(_) => show_error("Invalid MIDR"),
+    }
+    Ok(())
+}
+
 fn show_error(error: &str) {
     let document = web_sys::window()
         .expect("Couldn't find window")
