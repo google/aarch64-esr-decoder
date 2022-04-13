@@ -7,6 +7,10 @@
 - Print long name for multi-bit fields in command-line app (they were only being printed for single
   bit fields).
 
+### New features
+
+- Added support for decoding MIDR values too.
+
 ## 0.2.0
 
 ### Breaking changes
