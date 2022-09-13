@@ -102,6 +102,16 @@ pub fn decode(esr: u64) -> Result<Vec<FieldInfo>, DecodeError> {
             decode_iss_hvc(iss.value)?,
             None,
         ),
+        0b010110 => (
+            "HVC instruction execution in AArch64 state",
+            decode_iss_hvc(iss.value)?,
+            None,
+        ),
+        0b010111 => (
+            "SMC instruction execution in AArch64 state",
+            decode_iss_hvc(iss.value)?,
+            None,
+        ),
         0b011000 => {
             let (subfields, description) = decode_iss_msr(iss.value)?;
             (
