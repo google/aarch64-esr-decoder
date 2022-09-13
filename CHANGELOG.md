@@ -10,6 +10,7 @@
 ### New features
 
 - Added support for decoding MIDR values too.
+- Added HVC and SMC ECs for `ESR_EL2`.
 
 ## 0.2.0
 
