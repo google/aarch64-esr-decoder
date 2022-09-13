@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Library for decoding aarch64 Exception Syndrome Register and Main ID Register values.
+
 mod esr;
 mod midr;
 
@@ -146,7 +148,7 @@ impl Display for FieldInfo {
     }
 }
 
-/// An error decoding an ESR value.
+/// An error decoding a register value.
 #[derive(Debug, Error)]
 pub enum DecodeError {
     /// A RES0 field was not 0.

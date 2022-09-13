@@ -14,6 +14,7 @@
 
 use super::{DecodeError, FieldInfo};
 
+/// Decodes the given Main ID Register value, or returns an error if it is not valid.
 pub fn decode_midr(midr: u64) -> Result<Vec<FieldInfo>, DecodeError> {
     let res0 = FieldInfo::get(midr, "RES0", Some("Reserved"), 32, 64).check_res0()?;
     let implementer =
