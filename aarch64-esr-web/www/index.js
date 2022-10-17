@@ -45,6 +45,7 @@ if (midr != null) {
     wasm.decode_midr(midr.value);
   }
 }
+
 const smccc = document.getElementById("smccc");
 if (smccc != null) {
   smccc.oninput = () => {

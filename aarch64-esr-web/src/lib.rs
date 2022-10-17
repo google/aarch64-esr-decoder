@@ -53,7 +53,7 @@ pub fn decode_smccc(fn_id: &str) -> Result<(), JsValue> {
     match parse_number(fn_id) {
         Ok(fn_id) => {
             let decoded = aarch64_esr_decoder::decode_smccc(fn_id);
-            show_decoded(fn_id, decoded, 32u32)?;
+            show_decoded(fn_id, decoded, u32::BITS)?;
         }
         Err(_) => show_error("Invalid SMCCC Function ID"),
     }
