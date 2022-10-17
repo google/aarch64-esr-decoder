@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use aarch64_esr_decoder::{decode, parse_number, FieldInfo};
+use aarch64_esr_decoder::{decode, decode_midr, decode_smccc, parse_number, FieldInfo};
 use std::env;
+use std::ops::Deref;
 use std::process::exit;
 
 fn main() {
@@ -22,9 +23,21 @@ fn main() {
         Err(error_code) => exit(error_code),
     };
 
-    let esr = parse_number(&args.esr).unwrap();
-    let decoded = decode(esr).unwrap();
-    println!("ESR {:#034x}:", esr);
+    let value = parse_number(&args.value).unwrap();
+    let decoded = match args.mode {
+        Mode::Esr => {
+            println!("ESR {:#034x}:", value);
+            decode(value).unwrap()
+        }
+        Mode::Midr => {
+            println!("MIDR {:#034x}:", value);
+            decode_midr(value).unwrap()
+        }
+        Mode::Smccc => {
+            println!("SMC ID {:#018x}:", value);
+            decode_smccc(value).unwrap()
+        }
+    };
     print_decoded(&decoded, args.verbose, 0);
 }
 
@@ -60,19 +73,44 @@ fn print_decoded(fields: &[FieldInfo], verbose: bool, level: usize) {
 
 /// Parse and return command-line arguments, or an error code to return.
 fn parse_args() -> Result<Args, i32> {
-    let mut args: Vec<_> = env::args().collect();
-    match args.len() {
-        2 => Ok(Args {
+    let args: Vec<String> = env::args().collect();
+    let args: Vec<&str> = args.iter().map(Deref::deref).collect();
+    match args.as_slice() {
+        [_, esr] => Ok(Args {
             verbose: false,
-            esr: args.remove(1),
+            mode: Mode::Esr,
+            value: esr.to_string(),
         }),
-        3 => Ok(Args {
+        [_, "-v", esr] => Ok(Args {
             verbose: true,
-            esr: args.remove(2),
+            mode: Mode::Esr,
+            value: esr.to_string(),
+        }),
+        [_, "midr", midr] => Ok(Args {
+            verbose: false,
+            mode: Mode::Midr,
+            value: midr.to_string(),
+        }),
+        [_, "-v", "midr", midr] => Ok(Args {
+            verbose: true,
+            mode: Mode::Midr,
+            value: midr.to_string(),
+        }),
+        [_, "smccc", smccc] => Ok(Args {
+            verbose: false,
+            mode: Mode::Smccc,
+            value: smccc.to_string(),
+        }),
+        [_, "-v", "smccc", smccc] => Ok(Args {
+            verbose: true,
+            mode: Mode::Smccc,
+            value: smccc.to_string(),
         }),
         _ => {
             eprintln!("Usage:");
             eprintln!("  {} [-v] <ESR value>", args[0]);
+            eprintln!("  {} [-v] midr <MIDR value>", args[0]);
+            eprintln!("  {} [-v] smccc <SMCCC function ID>", args[0]);
             Err(1)
         }
     }
@@ -82,5 +120,13 @@ fn parse_args() -> Result<Args, i32> {
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct Args {
     verbose: bool,
-    esr: String,
+    mode: Mode,
+    value: String,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+enum Mode {
+    Esr,
+    Midr,
+    Smccc,
 }
