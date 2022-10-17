@@ -32,7 +32,7 @@ use tapp::decode_tapp_service;
 
 use super::{DecodeError, FieldInfo};
 
-/// Decodes the function id of SMCCC(ARM DEN 0028E v1.4), or returns an error if it is not valid.
+/// Decodes the function ID of an SMCCC (ARM DEN 0028E v1.4) call, or returns an error if it is not valid.
 pub fn decode_smccc(smccc: u64) -> Result<Vec<FieldInfo>, DecodeError> {
     let call_type = FieldInfo::get(smccc, "Call Type", None, 31, 32).describe(describe_call)?;
 
