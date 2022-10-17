@@ -45,3 +45,17 @@ if (midr != null) {
     wasm.decode_midr(midr.value);
   }
 }
+const smccc = document.getElementById("smccc");
+if (smccc != null) {
+  smccc.oninput = () => {
+    if (smccc.value.length > 0) {
+      wasm.decode_smccc(smccc.value);
+    }
+    window.location.hash = smccc.value;
+  };
+
+  if (window.location.hash) {
+    smccc.value = window.location.hash.substring(1);
+    wasm.decode_smccc(smccc.value);
+  }
+}

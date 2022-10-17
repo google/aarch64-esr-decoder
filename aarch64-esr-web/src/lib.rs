@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use aarch64_esr_decoder::{decode, parse_number, DecodeError, FieldInfo};
+use std::convert::TryFrom;
 use std::ops::Deref;
 use wasm_bindgen::prelude::*;
 use web_sys::{Document, Element};
@@ -28,7 +29,7 @@ pub fn decode_esr(esr: &str) -> Result<(), JsValue> {
     match parse_number(esr) {
         Ok(esr) => {
             let decoded = decode(esr);
-            show_decoded(esr, decoded)?;
+            show_decoded(esr, decoded, u64::BITS)?;
         }
         Err(_) => show_error("Invalid ESR"),
     }
@@ -40,9 +41,21 @@ pub fn decode_midr(midr: &str) -> Result<(), JsValue> {
     match parse_number(midr) {
         Ok(midr) => {
             let decoded = aarch64_esr_decoder::decode_midr(midr);
-            show_decoded(midr, decoded)?;
+            show_decoded(midr, decoded, u64::BITS)?;
         }
         Err(_) => show_error("Invalid MIDR"),
+    }
+    Ok(())
+}
+
+#[wasm_bindgen]
+pub fn decode_smccc(fn_id: &str) -> Result<(), JsValue> {
+    match parse_number(fn_id) {
+        Ok(fn_id) => {
+            let decoded = aarch64_esr_decoder::decode_smccc(fn_id);
+            show_decoded(fn_id, decoded, 32u32)?;
+        }
+        Err(_) => show_error("Invalid SMCCC Function ID"),
     }
     Ok(())
 }
@@ -63,7 +76,13 @@ fn show_error(error: &str) {
     error_element.set_text_content(Some(error));
 }
 
-fn show_decoded(esr: u64, decoded: Result<Vec<FieldInfo>, DecodeError>) -> Result<(), JsValue> {
+fn show_decoded(
+    esr: u64,
+    decoded: Result<Vec<FieldInfo>, DecodeError>,
+    nr_bit: u32,
+) -> Result<(), JsValue> {
+    assert!(nr_bit <= u64::BITS);
+    let nr_bit = usize::try_from(nr_bit).unwrap();
     let document = web_sys::window()
         .expect("Couldn't find window")
         .document()
@@ -82,7 +101,9 @@ fn show_decoded(esr: u64, decoded: Result<Vec<FieldInfo>, DecodeError>) -> Resul
     let row = document.create_element("tr")?;
     row.set_attribute("class", "value")?;
     let esr_hex = format!("{:016x}", esr);
-    for digit in esr_hex.chars() {
+    // Loop over number of chars of interest only
+    let nr_nib = (nr_bit + 3) / 4;
+    for digit in esr_hex.chars().skip(16 - nr_nib) {
         let cell = make_cell(&document, Some(&digit.to_string()), None, 4)?;
         row.append_child(&cell)?;
     }
@@ -91,7 +112,7 @@ fn show_decoded(esr: u64, decoded: Result<Vec<FieldInfo>, DecodeError>) -> Resul
     // ESR in binary
     let row = document.create_element("tr")?;
     row.set_attribute("class", "value")?;
-    for i in (0..u64::BITS).rev() {
+    for i in (0..nr_bit).rev() {
         let bit = esr & (1 << i) != 0;
         let cell = make_cell(&document, Some(if bit { "1" } else { "0" }), None, 1)?;
         row.append_child(&cell)?;
@@ -103,7 +124,7 @@ fn show_decoded(esr: u64, decoded: Result<Vec<FieldInfo>, DecodeError>) -> Resul
             // Top-level field names and values
             let row = document.create_element("tr")?;
             row.set_attribute("class", "name")?;
-            let mut last = 64;
+            let mut last = nr_bit;
             add_field_cells(
                 &document,
                 &row,
@@ -117,7 +138,7 @@ fn show_decoded(esr: u64, decoded: Result<Vec<FieldInfo>, DecodeError>) -> Resul
             // Top-level field descriptions
             let row = document.create_element("tr")?;
             row.set_attribute("class", "description")?;
-            let mut last = 64;
+            let mut last = nr_bit;
             add_field_cells(
                 &document,
                 &row,
@@ -131,7 +152,7 @@ fn show_decoded(esr: u64, decoded: Result<Vec<FieldInfo>, DecodeError>) -> Resul
             // Second level field names and values
             let row = document.create_element("tr")?;
             row.set_attribute("class", "name")?;
-            let mut last = 64;
+            let mut last = nr_bit;
             for field in &fields {
                 add_field_cells(
                     &document,
@@ -147,7 +168,7 @@ fn show_decoded(esr: u64, decoded: Result<Vec<FieldInfo>, DecodeError>) -> Resul
             // Second level field descriptions
             let row = document.create_element("tr")?;
             row.set_attribute("class", "description")?;
-            let mut last = 64;
+            let mut last = nr_bit;
             for field in &fields {
                 add_field_cells(
                     &document,

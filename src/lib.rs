@@ -16,10 +16,12 @@
 
 mod esr;
 mod midr;
+mod smccc;
 
 use bit_field::BitField;
 pub use esr::decode;
 pub use midr::decode_midr;
+pub use smccc::decode_smccc;
 use std::fmt::{self, Debug, Display, Formatter};
 use std::num::ParseIntError;
 use thiserror::Error;
