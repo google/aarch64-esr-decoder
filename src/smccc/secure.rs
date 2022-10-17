@@ -12,14 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use super::{smccc_general32_queries, DecodeError, FieldInfo};
+use super::{ffa::decode_ffa, smccc_general32_queries, DecodeError, FieldInfo};
 
 pub fn decode_secure_service(smccc: u64, conv: u64) -> Result<FieldInfo, DecodeError> {
-    if conv == 0 {
-        FieldInfo::get(smccc, "Function Number", None, 0, 16).describe(describe_secure32_service)
+    let mut info = if conv == 0 {
+        FieldInfo::get(smccc, "Function Number", None, 0, 16).describe(describe_secure32_service)?
     } else {
-        FieldInfo::get(smccc, "Function Number", None, 0, 16).describe(describe_secure64_service)
+        FieldInfo::get(smccc, "Function Number", None, 0, 16).describe(describe_secure64_service)?
+    };
+    if let Some(ffa_info) = decode_ffa(smccc) {
+        info.subfields.push(ffa_info);
     }
+    Ok(info)
 }
 
 fn secure_service(service: u64) -> &'static str {

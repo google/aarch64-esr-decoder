@@ -16,6 +16,7 @@
 
 mod arm;
 mod common;
+mod ffa;
 mod hyp;
 mod secure;
 mod tapp;
