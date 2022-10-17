@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.2
+
+### New features
+
+- Added support for decoding SMCCC function IDs.
+- Added support for MIDR and SMCCC to command-line tool.
+
 ## 0.2.1
 
 ### Bugfixes
