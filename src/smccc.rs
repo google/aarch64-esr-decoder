@@ -34,14 +34,7 @@ use super::{DecodeError, FieldInfo};
 
 /// Decodes the function id of SMCCC(ARM DEN 0028E v1.4), or returns an error if it is not valid.
 pub fn decode_smccc(smccc: u64) -> Result<Vec<FieldInfo>, DecodeError> {
-    let call_type = FieldInfo::get(
-        smccc,
-        "Call Type",
-        Some("Fast Call[1] Yielding Call[0]"),
-        31,
-        32,
-    )
-    .describe(describe_call)?;
+    let call_type = FieldInfo::get(smccc, "Call Type", None, 31, 32).describe(describe_call)?;
 
     let result = if call_type.value == 1 {
         parse_fastcall(smccc)?
@@ -53,14 +46,8 @@ pub fn decode_smccc(smccc: u64) -> Result<Vec<FieldInfo>, DecodeError> {
 }
 
 pub fn parse_fastcall(smccc: u64) -> Result<Vec<FieldInfo>, DecodeError> {
-    let call_convention = FieldInfo::get(
-        smccc,
-        "Call Convention",
-        Some("SMC32/HV32[0] SMC64/HVC64[1]"),
-        30,
-        31,
-    )
-    .describe(describe_convention)?;
+    let call_convention =
+        FieldInfo::get(smccc, "Call Convention", None, 30, 31).describe(describe_convention)?;
     let service_call =
         FieldInfo::get(smccc, "Service Call", None, 24, 30).describe(describe_service)?;
 
