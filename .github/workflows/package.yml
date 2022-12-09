@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
-        run: sudo apt-get install ${{ matrix.binutils }}
+        run: sudo apt-get update && sudo apt-get install ${{ matrix.binutils }}
       - name: Toolchain
         uses: actions-rs/toolchain@v1
         with:
