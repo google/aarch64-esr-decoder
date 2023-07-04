@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.3
+
+### New features
+
+- Added support for ISS decoding with RME extension.
+
 ## 0.2.2
 
 ### New features
