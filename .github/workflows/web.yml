@@ -19,7 +19,7 @@ jobs:
         working-directory: aarch64-esr-web
         run: wasm-pack build
       - name: NPM install and build
-        working-directory: aarch64-esr-web/www
+        working-directory: aarch64-esr-web
         run: |
           npm install
           npm run build
@@ -28,4 +28,4 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@4.1.5
         with:
           branch: gh-pages
-          folder: aarch64-esr-web/www/dist
+          folder: aarch64-esr-web/dist

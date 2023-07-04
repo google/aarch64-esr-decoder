@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>AArch64 ESR decoder</title>
+    <title>AArch64 MIDR decoder</title>
     <style type="text/css">
       table { border-collapse: collapse; }
       td { border: 1px solid black; }
@@ -14,19 +14,18 @@
   </head>
   <body>
     <noscript>This page contains webassembly and JavaScript content, please enable JavaScript in your browser.</noscript>
-    <script src="./bootstrap.js"></script>
-    <h1>AArch64 ESR decoder</h1>
+    <script src="index.js"></script>
+    <h1>AArch64 MIDR decoder</h1>
     <p><a href="https://github.com/google/aarch64-esr-decoder">Source and command-line version</a></p>
     <form>
       <p>
-        <label for="esr">ESR:</label>
-        <input type="text" id="esr" autofocus="true"/>
+        <label for="midr">MIDR:</label>
+        <input type="text" id="midr" autofocus="true"/>
       </p>
     </form>
     <table id="result_table"></table>
     <p id="error"></p>
-    <p><a href="midr.html">MIDR decoder</a></p>
+    <p><a href="/">ESR decoder</a></p>
     <p><a href="smccc.html">SMCCC decoder</a></p>
-
   </body>
 </html>
