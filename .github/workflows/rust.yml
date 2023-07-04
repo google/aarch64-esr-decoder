@@ -52,7 +52,7 @@ jobs:
       - name: Convert coverage
         run: ./grcov . -s . --binary-path target/debug/ -t lcov --branch --ignore-not-existing -o target/debug/lcov.info
       - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           directory: ./target/debug
           fail_ci_if_error: true
