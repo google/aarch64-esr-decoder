@@ -211,6 +211,30 @@ fn describe_fsc(fsc: u64) -> Result<&'static str, DecodeError> {
              hardware update of translation table, level 3."
         }
         0b100001 => "Alignment fault.",
+        0b100011 => {
+            "Granule Protection Fault on translation table walk or hardware update of \
+            translation table, level -1."
+        }
+        0b100100 => {
+            "Granule Protection Fault on translation table walk or hardware update of \
+            translation table, level 0."
+        }
+        0b100101 => {
+            "Granule Protection Fault on translation table walk or hardware update of \
+            translation table, level 1."
+        }
+        0b100110 => {
+            "Granule Protection Fault on translation table walk or hardware update of \
+            translation table, level 2."
+        }
+        0b100111 => {
+            "Granule Protection Fault on translation table walk or hardware update of \
+            translation table, level 3."
+        }
+        0b101000 => {
+            "Granule Protection Fault, not on translation table walk or hardware update of \
+            translation table."
+        }
         0b101001 => "Address size fault, level -1.",
         0b101011 => "Translation fault, level -1.",
         0b110000 => "TLB conflict abort.",
