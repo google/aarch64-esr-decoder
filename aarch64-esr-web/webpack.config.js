@@ -13,6 +13,11 @@ module.exports = {
     path: dist,
     filename: "[name].js",
   },
+  devtool: "source-map",
+  optimization: {
+    minimize: true,
+    usedExports: true,
+  },
   experiments: {
     asyncWebAssembly: true,
   },
