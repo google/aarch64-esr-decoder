@@ -43,7 +43,8 @@ jobs:
       - name: Run tests with coverage
         run: cargo llvm-cov test --all-features --codecov --output-path codecov-report.json
       - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
-          files: codecov-report.json
           fail_ci_if_error: true
+          files: codecov-report.json
+          token: ${{ secrets.CODECOV_TOKEN }}
