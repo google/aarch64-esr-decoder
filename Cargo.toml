@@ -13,7 +13,7 @@ readme = "README.md"
 
 [dependencies]
 bit_field = "0.10.1"
-thiserror = "1.0.56"
+thiserror = "1.0.57"
 
 [package.metadata.deb]
 section = "devel"
