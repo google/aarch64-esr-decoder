@@ -31,7 +31,7 @@ pub fn decode_esr(esr: &str) -> Result<(), JsValue> {
             let decoded = decode(esr);
             show_decoded(esr, decoded, u64::BITS)?;
         }
-        Err(_) => show_error("Invalid ESR"),
+        Err(_) => show_error("ESR not valid hex or decimal number"),
     }
     Ok(())
 }
@@ -43,7 +43,7 @@ pub fn decode_midr(midr: &str) -> Result<(), JsValue> {
             let decoded = aarch64_esr_decoder::decode_midr(midr);
             show_decoded(midr, decoded, u64::BITS)?;
         }
-        Err(_) => show_error("Invalid MIDR"),
+        Err(_) => show_error("MIDR not valid hex or decimal number"),
     }
     Ok(())
 }
@@ -55,7 +55,7 @@ pub fn decode_smccc(fn_id: &str) -> Result<(), JsValue> {
             let decoded = aarch64_esr_decoder::decode_smccc(fn_id);
             show_decoded(fn_id, decoded, u32::BITS)?;
         }
-        Err(_) => show_error("Invalid SMCCC Function ID"),
+        Err(_) => show_error("SMCCC Function ID not valid hex or decimal number"),
     }
     Ok(())
 }
