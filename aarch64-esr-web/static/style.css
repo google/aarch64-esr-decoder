@@ -1,0 +1,6 @@
+table { border-collapse: collapse; }
+td { border: 1px solid black; }
+tr.value td { font-family: monospace; }
+tr.description td:not(:empty) { background-color: #ffffdd; }
+tr.name td:not(:empty) { background-color: #ddffdd; font-family: monospace; }
+p#error { color: red; }
