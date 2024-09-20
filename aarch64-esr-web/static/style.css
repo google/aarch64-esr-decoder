@@ -17,3 +17,25 @@ tr.name td:not(:empty) {
 p#error {
   color: red;
 }
+ul.tabbar {
+  margin: 0;
+  padding-top: 5px;
+  padding-bottom: 0;
+  padding-left: 5px;
+  padding-right: 5px;
+  width: 100%;
+  list-style: none;
+  border-bottom: 1px solid #ddffdd;
+}
+.tabbar li {
+  background-color: #ffffdd;
+  display: inline-block;
+  padding: 10px;
+}
+.tabbar li.current,
+.tabbar li.current:hover {
+  background-color: #ddffdd;
+}
+.tabbar li:hover {
+  background-color: #cceecc;
+}

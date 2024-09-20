@@ -8,8 +8,12 @@
   <body>
     <noscript>This page contains webassembly and JavaScript content, please enable JavaScript in your browser.</noscript>
     <script src="index.js"></script>
-    <h1>AArch64 MIDR decoder</h1>
-    <p><a href="https://github.com/google/aarch64-esr-decoder">Source and command-line version</a></p>
+    <h1>AArch64 register decoder</h1>
+    <ul class="tabbar">
+      <li><a href="/">ESR</a></li>
+      <li class="current">MIDR</li>
+      <li><a href="smccc.html">SMCCC</a></li>
+    </ul>
     <form>
       <p>Decimal or hexadecimal input supported. Use <code>0x</code> for hexadecimal.</p>
       <p>
@@ -19,7 +23,6 @@
     </form>
     <table id="result_table"></table>
     <p id="error"></p>
-    <p><a href="/">ESR decoder</a></p>
-    <p><a href="smccc.html">SMCCC decoder</a></p>
+    <p><a href="https://github.com/google/aarch64-esr-decoder">Source and command-line version</a></p>
   </body>
 </html>
