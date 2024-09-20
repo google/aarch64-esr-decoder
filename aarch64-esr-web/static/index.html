@@ -3,20 +3,17 @@
   <head>
     <meta charset="utf-8">
     <title>AArch64 ESR decoder</title>
-    <style type="text/css">
-      table { border-collapse: collapse; }
-      td { border: 1px solid black; }
-      tr.value td { font-family: monospace; }
-      tr.description td:not(:empty) { background-color: #ffffdd; }
-      tr.name td:not(:empty) { background-color: #ddffdd; font-family: monospace; }
-      p#error { color: red; }
-    </style>
+    <link href="style.css" rel="stylesheet"/>
   </head>
   <body>
     <noscript>This page contains webassembly and JavaScript content, please enable JavaScript in your browser.</noscript>
     <script src="index.js"></script>
-    <h1>AArch64 ESR decoder</h1>
-    <p><a href="https://github.com/google/aarch64-esr-decoder">Source and command-line version</a></p>
+    <h1>AArch64 register decoder</h1>
+    <ul class="tabbar">
+      <li class="current">ESR</li>
+      <li><a href="midr.html">MIDR</a></li>
+      <li><a href="smccc.html">SMCCC</a></li>
+    </ul>
     <form>
       <p>Decimal or hexadecimal input supported. Use <code>0x</code> for hexadecimal.</p>
       <p>
@@ -26,7 +23,6 @@
     </form>
     <table id="result_table"></table>
     <p id="error"></p>
-    <p><a href="midr.html">MIDR decoder</a></p>
-    <p><a href="smccc.html">SMCCC decoder</a></p>
+    <p><a href="https://github.com/google/aarch64-esr-decoder">Source and command-line version</a></p>
   </body>
 </html>
