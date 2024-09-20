@@ -28,14 +28,17 @@ ul.tabbar {
   border-bottom: 1px solid #ddffdd;
 }
 .tabbar li {
-  background-color: #ffffdd;
   display: inline-block;
+}
+.tabbar li.current {
+  background-color: #ddffdd;
   padding: 10px;
 }
-.tabbar li.current,
-.tabbar li.current:hover {
-  background-color: #ddffdd;
+.tabbar li a {
+  background-color: #ffffdd;
+  display: block;
+  padding: 10px;
 }
-.tabbar li:hover {
+.tabbar li a:hover {
   background-color: #cceecc;
 }
