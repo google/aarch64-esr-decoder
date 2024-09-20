@@ -1,0 +1,44 @@
+table {
+  border-collapse: collapse;
+}
+td {
+  border: 1px solid black;
+}
+tr.value td {
+  font-family: monospace;
+}
+tr.description td:not(:empty) {
+  background-color: #ffffdd;
+}
+tr.name td:not(:empty) {
+  background-color: #ddffdd;
+  font-family: monospace;
+}
+p#error {
+  color: red;
+}
+ul.tabbar {
+  margin: 0;
+  padding-top: 5px;
+  padding-bottom: 0;
+  padding-left: 5px;
+  padding-right: 5px;
+  width: 100%;
+  list-style: none;
+  border-bottom: 1px solid #ddffdd;
+}
+.tabbar li {
+  display: inline-block;
+}
+.tabbar li.current {
+  background-color: #ddffdd;
+  padding: 10px;
+}
+.tabbar li a {
+  background-color: #ffffdd;
+  display: block;
+  padding: 10px;
+}
+.tabbar li a:hover {
+  background-color: #cceecc;
+}
