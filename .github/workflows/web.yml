@@ -25,7 +25,7 @@ jobs:
           npm run build
       - name: Deploy to GitHub Pages
         if: ${{ github.event_name == 'push' }}
-        uses: JamesIves/github-pages-deploy-action@v4.6.9
+        uses: JamesIves/github-pages-deploy-action@v4.7.1
         with:
           branch: gh-pages
           folder: aarch64-esr-web/dist
