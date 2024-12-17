@@ -21,7 +21,7 @@ lto = true
 opt-level = "s"
 
 [dependencies]
-wasm-bindgen = "0.2.95"
+wasm-bindgen = "0.2.99"
 aarch64-esr-decoder = { path = ".." }
 web-sys = { version = "0.3.72", features = [ "Document", "Element", "HtmlElement", "Node", "Window" ] }
 
