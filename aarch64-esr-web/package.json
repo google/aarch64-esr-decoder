@@ -13,7 +13,7 @@
     "@webassemblyjs/ast": "^1.14.1",
     "@webassemblyjs/wasm-edit": "^1.14.1",
     "@webassemblyjs/wasm-parser": "^1.14.1",
-    "copy-webpack-plugin": "^12.0.2",
+    "copy-webpack-plugin": "^13.0.0",
     "rimraf": "^6.0.1",
     "webpack": "^5.98.0",
     "webpack-cli": "^6.0.1",
