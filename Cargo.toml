@@ -2,7 +2,7 @@
 name = "aarch64-esr-decoder"
 version = "0.2.3"
 authors = ["Andrew Walbran <qwandor@google.com>"]
-edition = "2018"
+edition = "2024"
 license = "Apache-2.0"
 description = "A library and command-line utility for decoding aarch64 Exception Syndrome Register values."
 repository = "https://github.com/google/aarch64-esr-decoder/"

@@ -35,9 +35,5 @@ fn describe_instruction_or_data(instruction_or_data: bool) -> &'static str {
 }
 
 fn describe_a_or_b(a_or_b: bool) -> &'static str {
-    if a_or_b {
-        "B Key"
-    } else {
-        "A Key"
-    }
+    if a_or_b { "B Key" } else { "A Key" }
 }

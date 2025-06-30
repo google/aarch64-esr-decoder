@@ -13,8 +13,9 @@
 // limitations under the License.
 
 use super::{
+    DecodeError, FieldInfo,
     ffa::{ffa_32_function_id, ffa_64_function_id},
-    smccc_general32_queries, DecodeError, FieldInfo,
+    smccc_general32_queries,
 };
 
 pub fn decode_secure_service(smccc: u64, conv: u64) -> Result<FieldInfo, DecodeError> {

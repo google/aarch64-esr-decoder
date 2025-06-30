@@ -36,11 +36,7 @@ pub fn decode_iss_wf(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
 }
 
 fn describe_rv(rv: bool) -> &'static str {
-    if rv {
-        "RN is valid"
-    } else {
-        "RN is not valid"
-    }
+    if rv { "RN is valid" } else { "RN is not valid" }
 }
 
 fn describe_ti(ti: u64) -> Result<&'static str, DecodeError> {

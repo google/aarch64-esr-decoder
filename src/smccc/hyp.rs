@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use super::{describe_general32_queries, DecodeError, FieldInfo};
+use super::{DecodeError, FieldInfo, describe_general32_queries};
 
 pub fn decode_hyp_service(smccc: u64, conv: u64) -> Result<FieldInfo, DecodeError> {
     if conv == 0 {

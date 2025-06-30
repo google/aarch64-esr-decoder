@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use super::{reserved_fids, DecodeError, FieldInfo};
+use super::{DecodeError, FieldInfo, reserved_fids};
 
 pub fn decode_arm_service(smccc: u64, conv: u64) -> Result<FieldInfo, DecodeError> {
     if conv == 0 {

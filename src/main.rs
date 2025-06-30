@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use aarch64_esr_decoder::{decode, decode_midr, decode_smccc, parse_number, FieldInfo};
+use aarch64_esr_decoder::{FieldInfo, decode, decode_midr, decode_smccc, parse_number};
 use std::env;
 use std::ops::Deref;
 use std::process::exit;
