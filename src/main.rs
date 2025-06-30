@@ -26,15 +26,15 @@ fn main() {
     let value = parse_number(&args.value).unwrap();
     let decoded = match args.mode {
         Mode::Esr => {
-            println!("ESR {:#034x}:", value);
+            println!("ESR {value:#034x}:");
             decode(value).unwrap()
         }
         Mode::Midr => {
-            println!("MIDR {:#034x}:", value);
+            println!("MIDR {value:#034x}:");
             decode_midr(value).unwrap()
         }
         Mode::Smccc => {
-            println!("SMC ID {:#018x}:", value);
+            println!("SMC ID {value:#018x}:");
             decode_smccc(value).unwrap()
         }
     };
@@ -45,7 +45,7 @@ fn print_decoded(fields: &[FieldInfo], verbose: bool, level: usize) {
     let indentation = " ".repeat(level * 2);
     for field in fields {
         let verbose_name = match field.long_name {
-            Some(long_name) if verbose => format!(" ({})", long_name),
+            Some(long_name) if verbose => format!(" ({long_name})"),
             _ => "".to_string(),
         };
         if field.width == 1 {
@@ -64,7 +64,7 @@ fn print_decoded(fields: &[FieldInfo], verbose: bool, level: usize) {
             );
         }
         if let Some(description) = &field.description {
-            println!("{}  # {}", indentation, description);
+            println!("{indentation}  # {description}");
         }
 
         print_decoded(&field.subfields, verbose, level + 1);

@@ -98,7 +98,7 @@ impl Display for SyndromeAccessSize {
             Self::Word => "word",
             Self::Doubleword => "doubleword",
         };
-        write!(f, "{}", s)
+        write!(f, "{s}")
     }
 }
 

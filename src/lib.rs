@@ -119,7 +119,7 @@ impl FieldInfo {
         if self.width == 1 {
             if self.value == 1 { "true" } else { "false" }.to_string()
         } else {
-            format!("{:#01$x}", self.value, (self.width + 3) / 4 + 2,)
+            format!("{:#01$x}", self.value, self.width.div_ceil(4) + 2,)
         }
     }
 
