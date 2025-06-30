@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.4
+
+No new features or bugfixes, only dependency updates.
+
 ## 0.2.3
 
 ### New features

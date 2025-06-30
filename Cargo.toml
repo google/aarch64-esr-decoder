@@ -1,6 +1,6 @@
 [package]
 name = "aarch64-esr-decoder"
-version = "0.2.3"
+version = "0.2.4"
 authors = ["Andrew Walbran <qwandor@google.com>"]
 edition = "2024"
 license = "Apache-2.0"
