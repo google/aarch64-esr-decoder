@@ -17,6 +17,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install wasm-pack
         uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: "v0.13.1"
       - name: Build with wasm-pack
         working-directory: aarch64-esr-web
         run: wasm-pack build
