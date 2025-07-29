@@ -7,7 +7,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  cargo-deb-version: 3.1.0
+  cargo-deb-version: 3.3.0
 
 jobs:
   build:
@@ -57,7 +57,7 @@ jobs:
           key: ${{ runner.os }}-cargo-bin-${{ env.cargo-deb-version }}
 
       - name: Install cargo-deb
-        run: cargo install cargo-deb --version ${{ env.cargo-deb-version }}
+        run: cargo install cargo-deb --version ${{ env.cargo-deb-version }} --locked
 
       - name: Cross build
         uses: actions-rs/cargo@v1
