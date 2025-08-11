@@ -1,5 +1,6 @@
 {
   "name": "AArch64 ESR decoder",
+  "short_name": "AArch64 ESR",
   "description": "Decoder for aarch64 Exception Syndrome Register values. Also supports MIDR values and SMCCC function IDs.",
   "icons": [
     {
@@ -18,7 +19,9 @@
       "sizes": "any"
     }
   ],
+  "background_color": "#ffffff",
   "start_url": "/",
+  "id": "/",
   "display": "standalone",
   "categories": ["devtools", "utilities"]
 }
