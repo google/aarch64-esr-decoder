@@ -37,5 +37,10 @@
   "start_url": "/",
   "id": "/",
   "display": "standalone",
-  "categories": ["devtools", "utilities"]
+  "categories": ["devtools", "utilities"],
+  "shortcuts": [
+    { "name": "ESR decoder", "short_name": "ESR", "url": "/" },
+    { "name": "MIDR decoder", "short_name": "MIDR", "url": "midr.html" },
+    { "name": "SMCCC decoder", "short_name": "SMCCC", "url": "smccc.html" }
+  ]
 }
