@@ -19,6 +19,20 @@
       "sizes": "any"
     }
   ],
+  "screenshots": [
+    {
+      "src": "screenshot-desktop.png",
+      "type": "image/png",
+      "sizes": "1115x773",
+      "form_factor": "wide"
+    },
+    {
+      "src": "screenshot-mobile.png",
+      "type": "image/png",
+      "sizes": "1080x2400",
+      "form_factor": "narrow"
+    }
+  ],
   "background_color": "#ffffff",
   "start_url": "/",
   "id": "/",
