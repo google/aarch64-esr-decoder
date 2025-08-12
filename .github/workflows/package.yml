@@ -28,7 +28,7 @@ jobs:
             binutils: binutils-aarch64-linux-gnu
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install ${{ matrix.binutils }}
       - name: Toolchain
