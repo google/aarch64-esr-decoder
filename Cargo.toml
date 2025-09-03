@@ -1,3 +1,6 @@
+[workspace]
+members = ["arm-sysregs"]
+
 [package]
 name = "aarch64-esr-decoder"
 version = "0.2.4"
