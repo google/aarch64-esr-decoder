@@ -12,14 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use quick_xml::de;
 use serde::{Deserialize, Deserializer, de::Unexpected};
-use std::io::stdin;
-
-fn main() {
-    let register_page: RegisterPage = de::from_reader(stdin().lock()).unwrap();
-    println!("{register_page:#?}");
-}
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 pub struct RegisterPage {
@@ -475,6 +468,7 @@ fn hex_u64<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u64, D::Error> 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use quick_xml::de;
     use std::{
         fs::{File, read_dir},
         io::BufReader,

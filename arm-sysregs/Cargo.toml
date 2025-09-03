@@ -11,4 +11,6 @@ categories = ["development-tools"]
 
 [dependencies]
 serde = { version = "1.0.219", features = ["derive"] }
+
+[dev-dependencies]
 quick-xml = { version = "0.38.1", features = ["serialize"] }
