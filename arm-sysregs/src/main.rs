@@ -471,3 +471,123 @@ fn hex_u64<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u64, D::Error> 
     u64::from_str_radix(rest, 16)
         .map_err(|_| serde::de::Error::invalid_value(Unexpected::Str(&s), &"hex number"))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::{
+        fs::{File, read_dir},
+        io::BufReader,
+    };
+
+    #[test]
+    fn parse_reg_purpose() {
+        let reg_purpose: RegPurpose = de::from_str(
+            "<reg_purpose><purpose_text><para>foo</para></purpose_text></reg_purpose>",
+        )
+        .unwrap();
+        assert_eq!(
+            reg_purpose,
+            RegPurpose {
+                purpose_text: vec![Text {
+                    text: vec![TextEntry::Para(Para {})]
+                }]
+            }
+        );
+    }
+
+    #[test]
+    fn parse_reg_condition_string() {
+        let reg_condition: RegCondition =
+            de::from_str("<reg_condition>foo</reg_condition>").unwrap();
+        assert_eq!(
+            reg_condition,
+            RegCondition {
+                otherwise: None,
+                condition: vec![TextEntry::String("foo".to_string())]
+            }
+        );
+    }
+
+    #[test]
+    fn parse_reg_condition_para() {
+        let reg_condition: RegCondition =
+            de::from_str("<reg_condition><para>foo</para></reg_condition>").unwrap();
+        assert_eq!(
+            reg_condition,
+            RegCondition {
+                otherwise: None,
+                condition: vec![TextEntry::Para(Para {})]
+            }
+        );
+    }
+
+    #[test]
+    fn parse_field_description_empty() {
+        let field_description: FieldDescription =
+            de::from_str("<field_description order=\"before\"/>").unwrap();
+        assert_eq!(
+            field_description,
+            FieldDescription {
+                order: Order::Before,
+                description: vec![],
+            }
+        );
+    }
+
+    #[test]
+    fn parse_field_description_para() {
+        let field_description: FieldDescription = de::from_str(
+            "<field_description order=\"before\"><para>foo</para></field_description>",
+        )
+        .unwrap();
+        assert_eq!(
+            field_description,
+            FieldDescription {
+                order: Order::Before,
+                description: vec![TextEntry::Para(Para {})],
+            }
+        );
+    }
+
+    #[test]
+    fn parse_reg_reset_value_empty() {
+        let reg_reset_value: RegResetValue =
+            de::from_str("<reg_reset_value></reg_reset_value>").unwrap();
+        assert_eq!(
+            reg_reset_value,
+            RegResetValue {
+                reg_reset_limited_to_el: vec![],
+                reg_reset_special_text: None
+            }
+        );
+    }
+
+    #[test]
+    fn parse_reg_attributes() {
+        let reg_attributes: RegAttributes = de::from_str(
+            "<reg_attributes><attributes_text><para>foo</para></attributes_text></reg_attributes>",
+        )
+        .unwrap();
+        assert_eq!(
+            reg_attributes,
+            RegAttributes {
+                attributes_text: vec![Text {
+                    text: vec![TextEntry::Para(Para {})]
+                }]
+            }
+        );
+    }
+
+    #[test]
+    fn parse_text_before_fields() {
+        let text_before_fields: Text =
+            de::from_str("<text_before_fields><para>foo</para></text_before_fields>").unwrap();
+        assert_eq!(
+            text_before_fields,
+            Text {
+                text: vec![TextEntry::Para(Para {})]
+            }
+        );
+    }
+}
