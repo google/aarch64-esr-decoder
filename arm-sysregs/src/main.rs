@@ -46,13 +46,16 @@ pub struct Register {
     pub reg_short_name: String,
     pub reg_long_name: String,
     pub reg_condition: Option<RegCondition>,
-    pub reg_reset_value: String,
-    pub reg_mappings: (), // TODO
+    pub power_domain_text: Option<Text>,
+    pub reg_reset_value: RegResetValue,
+    pub reg_mappings: RegMappings,
     pub reg_purpose: RegPurpose,
+    pub reg_groups: RegGroups,
+    pub reg_configuration: Option<RegConfiguration>,
     pub reg_attributes: RegAttributes,
     pub reg_fieldsets: RegFieldsets,
     pub access_mechanisms: AccessMechanisms,
-    pub arch_variants: (), // TODO
+    pub arch_variants: ArchVariants,
     #[serde(default)]
     pub reg_address: Vec<RegAddress>,
 }
@@ -61,34 +64,95 @@ pub struct Register {
 pub enum ExecutionState {
     AArch32,
     AArch64,
+    External,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 pub struct RegCondition {
     #[serde(rename = "@otherwise")]
     pub otherwise: Option<String>,
-    #[serde(rename = "$value")]
-    pub condition: String,
+    #[serde(rename = "$value", default)]
+    pub condition: Vec<TextEntry>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct RegResetValue {
+    #[serde(default)]
+    pub reg_reset_limited_to_el: Vec<String>,
+    pub reg_reset_special_text: Option<RegResetSpecialText>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct RegResetSpecialText {}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct RegMappings {
+    #[serde(default)]
+    pub reg_mapping: Vec<RegMapping>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct RegMapping {
+    pub mapped_name: MappedName,
+    pub mapped_type: String,
+    pub mapped_execution_state: ExecutionState,
+    pub mapped_from_startbit: Option<u8>,
+    pub mapped_from_endbit: Option<u8>,
+    pub mapped_to_startbit: Option<u8>,
+    pub mapped_to_endbit: Option<u8>,
+    pub mapped_from_rangeset: Option<MappedFromRangeset>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct MappedName {
+    #[serde(rename = "@filename")]
+    pub filename: String,
+    #[serde(rename = "$text")]
+    pub name: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct MappedFromRangeset {
+    #[serde(rename = "@output")]
+    pub output: String,
+    pub range: Vec<Range>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct Range {
+    pub msb: u8,
+    pub lsb: u8,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 pub struct RegPurpose {
-    pub purpose_text: Text,
+    pub purpose_text: Vec<Text>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 pub struct RegGroups {
-    pub reg_group: String,
+    pub reg_group: Vec<String>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct RegConfiguration {
+    #[serde(default)]
+    pub configuration_text: Vec<ConfigurationText>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct ConfigurationText {}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 pub struct RegAttributes {
-    pub attributes_text: Text,
+    pub attributes_text: Vec<Text>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 pub struct RegFieldsets {
+    #[serde(default)]
     pub fields: Vec<Fields>,
+    #[serde(default)]
     pub reg_fieldset: Vec<RegFieldset>,
 }
 
@@ -99,7 +163,7 @@ pub struct Fields {
     #[serde(rename = "@length")]
     pub length: Option<u8>,
     pub fields_condition: Option<String>,
-    pub text_before_fields: String,
+    pub text_before_fields: Text,
     pub field: Vec<Field>,
 }
 
@@ -143,17 +207,43 @@ pub struct Field {
 pub struct FieldDescription {
     #[serde(rename = "@order")]
     pub order: Order,
-    //#[serde(rename = "$value")]
-    //pub description: Text, // TODO
+    #[serde(rename = "$value", default)]
+    pub description: Vec<TextEntry>,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq)]
 pub struct Text {
-    pub para: Vec<Para>,
+    #[serde(rename = "$value", default)]
+    pub text: Vec<TextEntry>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
-pub struct Para {}
+#[serde(rename_all = "kebab-case")]
+pub enum TextEntry {
+    #[serde(rename = "$text")]
+    String(String),
+    ArmDefinedWord(String),
+    List(List),
+    Note(Text),
+    Para(Para),
+    Table(Table),
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct Para {
+    // TODO
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct List {
+    pub listitem: Vec<ListItem>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct ListItem {}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct Table {}
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
@@ -217,26 +307,32 @@ pub struct Encoding {
 pub struct Enc {
     #[serde(rename = "@n")]
     pub n: EncName,
-    #[serde(rename = "@v", deserialize_with = "binary_u8")]
-    pub v: u8,
+    #[serde(rename = "@v")]
+    pub v: String,
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
+#[serde(rename_all = "lowercase")]
 pub enum EncName {
-    #[serde(rename = "op0")]
-    Op0,
-    #[serde(rename = "op1")]
-    Op1,
-    CRn,
-    CRm,
-    #[serde(rename = "op2")]
-    Op2,
-    #[serde(rename = "coproc")]
     Coproc,
-    #[serde(rename = "opc1")]
+    #[serde(rename = "CRd")]
+    CRd,
+    #[serde(rename = "CRm")]
+    CRm,
+    #[serde(rename = "CRn")]
+    CRn,
+    #[serde(rename = "M")]
+    M,
+    #[serde(rename = "M1")]
+    M1,
+    Op0,
+    Op1,
+    Op2,
     Opc1,
-    #[serde(rename = "opc2")]
     Opc2,
+    #[serde(rename = "R")]
+    R,
+    Reg,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
@@ -289,8 +385,7 @@ pub struct RegAddress {
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 pub struct RegOffset {
-    #[serde(deserialize_with = "hex_u64")]
-    pub hexnumber: u64,
+    pub hexnumber: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
@@ -302,6 +397,18 @@ pub struct RegAccess {
 pub struct RegAccessState {
     pub reg_access_level: Option<String>,
     pub reg_access_type: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct ArchVariants {
+    #[serde(default)]
+    pub arch_variant: Vec<ArchVariant>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct ArchVariant {
+    #[serde(rename = "@name")]
+    pub name: String,
 }
 
 fn titlecase_bool<'de, D: Deserializer<'de>>(deserializer: D) -> Result<bool, D::Error> {
