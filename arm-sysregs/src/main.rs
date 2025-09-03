@@ -590,4 +590,38 @@ mod tests {
             }
         );
     }
+
+    #[test]
+    fn parse_all() {
+        let mut failed = 0;
+        let mut succeeded = 0;
+        for entry in read_dir("SysReg_xml_A_profile-2025-06/SysReg_xml_A_profile-2025-06").unwrap()
+        {
+            let entry = entry.unwrap();
+            let filename = entry.file_name().into_string().unwrap();
+            if filename.ends_with(".xml")
+                && !filename.ends_with("index.xml")
+                && ![
+                    "amu.xml",
+                    "architecture_info.xml",
+                    "instructions.xml",
+                    "notice.xml",
+                    "pmu.xml",
+                ]
+                .contains(&filename.as_str())
+            {
+                if let Err(e) = de::from_reader::<_, RegisterPage>(BufReader::new(
+                    File::open(entry.path()).unwrap(),
+                )) {
+                    println!("{filename}:");
+                    println!("{e}");
+                    failed += 1;
+                } else {
+                    succeeded += 1;
+                }
+            }
+        }
+        println!("{succeeded} succeeded");
+        assert_eq!(failed, 0);
+    }
 }
