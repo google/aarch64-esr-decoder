@@ -304,6 +304,17 @@ pub struct Enc {
     pub v: String,
 }
 
+impl Enc {
+    pub fn parse_value(&self) -> Option<u8> {
+        let (prefix, rest) = self.v.split_at_checked(2)?;
+        if prefix == "0b" {
+            u8::from_str_radix(rest, 2).ok()
+        } else {
+            None
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum EncName {
@@ -381,6 +392,17 @@ pub struct RegOffset {
     pub hexnumber: String,
 }
 
+impl RegOffset {
+    pub fn parse_hex(&self) -> Option<u64> {
+        let (prefix, rest) = self.hexnumber.split_at_checked(2)?;
+        if prefix == "0x" {
+            u64::from_str_radix(rest, 16).ok()
+        } else {
+            None
+        }
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 pub struct RegAccess {
     pub reg_access_state: Vec<RegAccessState>,
@@ -427,42 +449,6 @@ fn titlecase_bool_option<'de, D: Deserializer<'de>>(
             &"True or False",
         )),
     }
-}
-
-fn binary_u8<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u8, D::Error> {
-    let s = String::deserialize(deserializer)?;
-    let (prefix, rest) = s
-        .split_at_checked(2)
-        .ok_or(serde::de::Error::invalid_value(
-            Unexpected::Str(&s),
-            &"binary number",
-        ))?;
-    if prefix != "0b" {
-        return Err(serde::de::Error::invalid_value(
-            Unexpected::Str(&s),
-            &"binary number",
-        ));
-    }
-    u8::from_str_radix(rest, 2)
-        .map_err(|_| serde::de::Error::invalid_value(Unexpected::Str(&s), &"binary number"))
-}
-
-fn hex_u64<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u64, D::Error> {
-    let s = String::deserialize(deserializer)?;
-    let (prefix, rest) = s
-        .split_at_checked(2)
-        .ok_or(serde::de::Error::invalid_value(
-            Unexpected::Str(&s),
-            &"hex number",
-        ))?;
-    if prefix != "0x" {
-        return Err(serde::de::Error::invalid_value(
-            Unexpected::Str(&s),
-            &"hex number",
-        ));
-    }
-    u64::from_str_radix(rest, 16)
-        .map_err(|_| serde::de::Error::invalid_value(Unexpected::Str(&s), &"hex number"))
 }
 
 #[cfg(test)]
@@ -583,6 +569,20 @@ mod tests {
                 text: vec![TextEntry::Para(Para {})]
             }
         );
+    }
+
+    #[test]
+    fn parse_hexnumber() {
+        let reg_offset: RegOffset =
+            de::from_str("<reg_offset><hexnumber>0x18</hexnumber></reg_offset>").unwrap();
+        assert_eq!(reg_offset.parse_hex(), Some(0x18));
+    }
+
+    #[test]
+    fn parse_enc() {
+        let enc: Enc = de::from_str("<enc n=\"coproc\" v=\"0b1101\"/>").unwrap();
+        assert_eq!(enc.n, EncName::Coproc);
+        assert_eq!(enc.parse_value(), Some(0b1101));
     }
 
     #[test]
