@@ -16,14 +16,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build
-        run: cargo build
+        run: cargo build --all
       - name: Run tests
-        run: cargo test
+        run: cargo test --all
       - name: Run clippy
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features
+          args: --all --all-features
 
   format:
     runs-on: ubuntu-latest
@@ -43,7 +43,7 @@ jobs:
         with:
           tool: cargo-llvm-cov
       - name: Run tests with coverage
-        run: cargo llvm-cov test --all-features --codecov --output-path codecov-report.json
+        run: cargo llvm-cov test --all --all-features --codecov --output-path codecov-report.json
       - name: Upload coverage to codecov.io
         uses: codecov/codecov-action@v5
         with:
