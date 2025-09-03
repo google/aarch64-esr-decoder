@@ -36,7 +36,7 @@ pub struct Registers {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 pub struct Register {
     #[serde(rename = "@execution_state")]
-    pub execution_state: ExecutionState,
+    pub execution_state: Option<ExecutionState>,
     #[serde(rename = "@is_register", deserialize_with = "titlecase_bool")]
     pub is_register: bool,
     #[serde(rename = "@is_internal", deserialize_with = "titlecase_bool")]
@@ -45,7 +45,7 @@ pub struct Register {
     pub is_stub_entry: bool,
     pub reg_short_name: String,
     pub reg_long_name: String,
-    pub reg_condition: RegCondition,
+    pub reg_condition: Option<RegCondition>,
     pub reg_reset_value: String,
     pub reg_mappings: (), // TODO
     pub reg_purpose: RegPurpose,
@@ -53,17 +53,20 @@ pub struct Register {
     pub reg_fieldsets: RegFieldsets,
     pub access_mechanisms: AccessMechanisms,
     pub arch_variants: (), // TODO
+    #[serde(default)]
+    pub reg_address: Vec<RegAddress>,
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
 pub enum ExecutionState {
+    AArch32,
     AArch64,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 pub struct RegCondition {
     #[serde(rename = "@otherwise")]
-    pub otherwise: String,
+    pub otherwise: Option<String>,
     #[serde(rename = "$value")]
     pub condition: String,
 }
@@ -85,12 +88,17 @@ pub struct RegAttributes {
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 pub struct RegFieldsets {
-    pub fields: Fields,
-    pub reg_fieldset: RegFieldset,
+    pub fields: Vec<Fields>,
+    pub reg_fieldset: Vec<RegFieldset>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 pub struct Fields {
+    #[serde(rename = "@id")]
+    pub id: Option<String>,
+    #[serde(rename = "@length")]
+    pub length: Option<u8>,
+    pub fields_condition: Option<String>,
     pub text_before_fields: String,
     pub field: Vec<Field>,
 }
@@ -150,29 +158,52 @@ pub struct Para {}
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum Order {
+    After,
     Before,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
-pub struct RegFieldset {}
+pub struct RegFieldset {
+    #[serde(rename = "@length")]
+    pub length: u8,
+    pub fields_condition: Option<String>,
+    pub fieldat: Vec<FieldAt>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct FieldAt {
+    #[serde(rename = "@id")]
+    pub id: String,
+    #[serde(rename = "@label")]
+    pub label: Option<String>,
+    #[serde(rename = "@msb")]
+    pub msb: u8,
+    #[serde(rename = "@lsb")]
+    pub lsb: u8,
+}
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 pub struct AccessMechanisms {
+    #[serde(default)]
     pub access_mechanism: Vec<AccessMechanism>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 pub struct AccessMechanism {
     #[serde(rename = "@accessor")]
-    pub accessor: String,
+    pub accessor: Option<String>,
     #[serde(rename = "@type")]
     pub type_: AccessMechanismType,
-    pub encoding: Encoding,
-    pub access_permission: AccessPermission,
+    #[serde(rename = "@table_id")]
+    pub table_id: Option<String>,
+    pub encoding: Option<Encoding>,
+    pub access_permission: Option<AccessPermission>,
+    pub access_header: Option<AccessHeader>,
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
 pub enum AccessMechanismType {
+    BlockAccessAbstract,
     SystemAccessor,
 }
 
@@ -200,12 +231,21 @@ pub enum EncName {
     CRm,
     #[serde(rename = "op2")]
     Op2,
+    #[serde(rename = "coproc")]
+    Coproc,
+    #[serde(rename = "opc1")]
+    Opc1,
+    #[serde(rename = "opc2")]
+    Opc2,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 pub struct AccessPermission {
     pub ps: Ps,
 }
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct AccessHeader {}
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 pub struct Ps {
@@ -218,11 +258,71 @@ pub struct Ps {
     pub pstext: String,
 }
 
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct RegAddress {
+    #[serde(rename = "@external_access", deserialize_with = "titlecase_bool")]
+    pub external_access: bool,
+    #[serde(rename = "@mem_map_access", deserialize_with = "titlecase_bool")]
+    pub mem_map_access: bool,
+    #[serde(
+        rename = "@block_access",
+        deserialize_with = "titlecase_bool_option",
+        default
+    )]
+    pub block_access: Option<bool>,
+    #[serde(
+        rename = "@memory_access",
+        deserialize_with = "titlecase_bool_option",
+        default
+    )]
+    pub memory_access: Option<bool>,
+    #[serde(rename = "@table_id")]
+    pub table_id: Option<String>,
+    #[serde(rename = "@power_domain")]
+    pub power_domain: Option<String>,
+    pub reg_component: Option<String>,
+    pub reg_frame: Option<String>,
+    pub reg_offset: RegOffset,
+    pub reg_instance: Option<String>,
+    pub reg_access: RegAccess,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct RegOffset {
+    #[serde(deserialize_with = "hex_u64")]
+    pub hexnumber: u64,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct RegAccess {
+    pub reg_access_state: Vec<RegAccessState>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct RegAccessState {
+    pub reg_access_level: Option<String>,
+    pub reg_access_type: String,
+}
+
 fn titlecase_bool<'de, D: Deserializer<'de>>(deserializer: D) -> Result<bool, D::Error> {
     match String::deserialize(deserializer)?.as_ref() {
         "True" => Ok(true),
         "False" => Ok(false),
         other => Err(serde::de::Error::invalid_value(
+            Unexpected::Str(other),
+            &"True or False",
+        )),
+    }
+}
+
+fn titlecase_bool_option<'de, D: Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Option<bool>, D::Error> {
+    match <Option<String>>::deserialize(deserializer)?.as_deref() {
+        Some("True") => Ok(Some(true)),
+        Some("False") => Ok(Some(false)),
+        None => Ok(None),
+        Some(other) => Err(serde::de::Error::invalid_value(
             Unexpected::Str(other),
             &"True or False",
         )),
@@ -245,4 +345,22 @@ fn binary_u8<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u8, D::Error>
     }
     u8::from_str_radix(rest, 2)
         .map_err(|_| serde::de::Error::invalid_value(Unexpected::Str(&s), &"binary number"))
+}
+
+fn hex_u64<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u64, D::Error> {
+    let s = String::deserialize(deserializer)?;
+    let (prefix, rest) = s
+        .split_at_checked(2)
+        .ok_or(serde::de::Error::invalid_value(
+            Unexpected::Str(&s),
+            &"hex number",
+        ))?;
+    if prefix != "0x" {
+        return Err(serde::de::Error::invalid_value(
+            Unexpected::Str(&s),
+            &"hex number",
+        ));
+    }
+    u64::from_str_radix(rest, 16)
+        .map_err(|_| serde::de::Error::invalid_value(Unexpected::Str(&s), &"hex number"))
 }
