@@ -1,7 +1,7 @@
-# arm-sysregs
+# arm-sysregs-xml
 
-[![crates.io page](https://img.shields.io/crates/v/arm-sysregs.svg)](https://crates.io/crates/arm-sysregs)
-[![docs.rs page](https://docs.rs/arm-sysregs/badge.svg)](https://docs.rs/arm-sysregs)
+[![crates.io page](https://img.shields.io/crates/v/arm-sysregs-xml.svg)](https://crates.io/crates/arm-sysregs-xml)
+[![docs.rs page](https://docs.rs/arm-sysregs-xml/badge.svg)](https://docs.rs/arm-sysregs-xml)
 
 A library for parsing Arm system register XML files.
 

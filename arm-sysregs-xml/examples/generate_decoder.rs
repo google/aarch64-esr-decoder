@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use arm_sysregs::{EncName, Encoding, ExecutionState, RegisterPage};
+use arm_sysregs_xml::{EncName, Encoding, ExecutionState, RegisterPage};
 use quick_xml::de;
 use std::{
     collections::BTreeMap,

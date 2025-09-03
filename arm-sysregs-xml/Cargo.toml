@@ -1,5 +1,5 @@
 [package]
-name = "arm-sysregs"
+name = "arm-sysregs-xml"
 version = "0.1.0"
 authors = ["Andrew Walbran <qwandor@google.com>"]
 edition = "2024"
