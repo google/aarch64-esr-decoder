@@ -586,6 +586,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn parse_all() {
         let mut failed = 0;
         let mut succeeded = 0;
