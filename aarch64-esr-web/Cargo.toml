@@ -1,3 +1,5 @@
+[workspace]
+
 [package]
 name = "aarch64-esr-web"
 version = "0.1.0"
