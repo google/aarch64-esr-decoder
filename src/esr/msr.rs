@@ -60,6 +60,9 @@ fn describe_direction(direction: bool) -> &'static str {
 
 fn sysreg_name(op0: u64, op1: u64, op2: u64, crn: u64, crm: u64) -> &'static str {
     match (op0, crn, op1, crm, op2) {
+        (3, 13, 0, 0, 9) => "ACCDATA_EL1",
+        (3, 1, 0, 4, 1) => "ACTLRMASK_EL1",
+        (3, 1, 4, 4, 1) => "ACTLRMASK_EL2",
         (3, 1, 0, 0, 1) => "ACTLR_EL1",
         (3, 1, 4, 0, 1) => "ACTLR_EL2",
         (3, 1, 6, 0, 1) => "ACTLR_EL3",
@@ -70,9 +73,18 @@ fn sysreg_name(op0: u64, op1: u64, op2: u64, crn: u64, crm: u64) -> &'static str
         (3, 5, 0, 1, 1) => "AFSR1_EL1",
         (3, 5, 4, 1, 1) => "AFSR1_EL2",
         (3, 5, 6, 1, 1) => "AFSR1_EL3",
+        (3, 4, 0, 3, 0) => "ALLINT",
+        (3, 10, 0, 3, 1) => "AMAIR2_EL1",
+        (3, 10, 4, 3, 1) => "AMAIR2_EL2",
+        (3, 10, 6, 3, 1) => "AMAIR2_EL3",
         (3, 10, 0, 3, 0) => "AMAIR_EL1",
         (3, 10, 4, 3, 0) => "AMAIR_EL2",
         (3, 10, 6, 3, 0) => "AMAIR_EL3",
+        (3, 13, 3, 2, 1) => "AMCFGR_EL0",
+        (3, 13, 3, 2, 6) => "AMCG1IDR_EL0",
+        (3, 13, 3, 2, 2) => "AMCGCR_EL0",
+        (3, 13, 3, 2, 4) => "AMCNTENCLR0_EL0",
+        (3, 13, 3, 3, 0) => "AMCNTENCLR1_EL0",
         (3, 0, 1, 0, 0) => "CCSIDR_EL1",
         (3, 0, 1, 0, 1) => "CLIDR_EL1",
         (3, 1, 0, 0, 2) => "CPACR_EL1",
