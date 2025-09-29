@@ -11,7 +11,7 @@ categories = ["development-tools"]
 readme = "README.md"
 
 [dependencies]
-serde = { version = "1.0.224", features = ["derive"] }
+serde = { version = "1.0.226", features = ["derive"] }
 
 [dev-dependencies]
 quick-xml = { version = "0.38.1", features = ["serialize"] }
