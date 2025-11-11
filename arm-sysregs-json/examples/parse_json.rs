@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use arm_sysregs_xml::json::RegisterEntry;
+use arm_sysregs_json::RegisterEntry;
 use std::io::stdin;
 
 fn main() {

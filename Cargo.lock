@@ -11,12 +11,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "arm-sysregs-json"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "arm-sysregs-xml"
 version = "0.1.0"
 dependencies = [
  "quick-xml",
  "serde",
- "serde_json",
 ]
 
 [[package]]

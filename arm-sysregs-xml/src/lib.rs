@@ -14,8 +14,6 @@
 
 //! Types to parse the Arm system register XML format.
 
-pub mod json;
-
 use serde::{Deserialize, Deserializer, de::Unexpected};
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
