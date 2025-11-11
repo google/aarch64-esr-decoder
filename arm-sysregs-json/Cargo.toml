@@ -1,0 +1,17 @@
+[package]
+name = "arm-sysregs-json"
+version = "0.1.0"
+authors = ["Andrew Walbran <qwandor@google.com>"]
+edition = "2024"
+license = "Apache-2.0"
+description = "A library for parsing Arm system register JSON files."
+repository = "https://github.com/google/aarch64-esr-decoder/"
+keywords = ["aarch64"]
+categories = ["development-tools"]
+readme = "README.md"
+
+[dependencies]
+serde = { version = "1.0.228", features = ["derive"] }
+
+[dev-dependencies]
+serde_json = "1.0.145"

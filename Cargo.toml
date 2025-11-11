@@ -1,5 +1,5 @@
 [workspace]
-members = ["arm-sysregs-xml"]
+members = ["arm-sysregs-json", "arm-sysregs-xml"]
 
 [package]
 name = "aarch64-esr-decoder"

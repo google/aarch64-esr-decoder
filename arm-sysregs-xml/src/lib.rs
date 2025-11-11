@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Types to parse the Arm system register XML format.
+
 use serde::{Deserialize, Deserializer, de::Unexpected};
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
