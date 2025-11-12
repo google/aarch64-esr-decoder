@@ -12,10 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use arm_sysregs_json::RegisterEntry;
+use arm_sysregs_json::{ConditionalField, Field, FieldEntry, Register, RegisterEntry};
 use clap::Parser;
 use eyre::Report;
-use std::{fs::read_to_string, path::PathBuf};
+use log::{info, trace};
+use std::{
+    fs::{File, read_to_string},
+    io::{self, Write},
+    path::PathBuf,
+};
 
 fn main() -> Result<(), Report> {
     pretty_env_logger::init();
@@ -27,12 +32,252 @@ fn main() -> Result<(), Report> {
         registers.len(),
         args.registers_json.display()
     );
+    let mut output_file = File::create(args.output_file)?;
+    generate_all(&registers, &mut output_file)?;
 
     Ok(())
+}
+
+fn generate_all(registers: &[RegisterEntry], mut output_file: &File) -> Result<(), Report> {
+    let mut register_infos = Vec::new();
+
+    for register in registers {
+        match register {
+            RegisterEntry::Register(register) => {
+                if register.name == "SCR_EL3" {
+                    let register_info = RegisterInfo::from_json_register(register);
+                    println!("{register_info:#?}");
+                    register_infos.push(register_info);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    writeln!(output_file, "use bitflags::bitflags;")?;
+
+    for register in &register_infos {
+        writeln!(output_file)?;
+        register.write_bitflags(output_file)?;
+    }
+    for register in &register_infos {
+        writeln!(output_file)?;
+        register.write_accessor(output_file)?;
+    }
+
+    Ok(())
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct RegisterBit {
+    pub name: String,
+    pub index: u32,
+}
+
+impl RegisterBit {
+    fn from_field_entry(field_entry: &FieldEntry) -> Option<Self> {
+        match field_entry {
+            FieldEntry::Field(field) => {
+                trace!("  Field: {:?} {:?}", field.name, field.rangeset);
+                Self::from_field(field, 0)
+            }
+            FieldEntry::Reserved(field) => {
+                trace!("  Reserved field: {:?}", field.rangeset);
+                None
+            }
+            FieldEntry::ImplementationDefined(_implementation_defined_field) => todo!(),
+            FieldEntry::ConditionalField(field) => {
+                trace!(
+                    "  Conditional field: {:?}, {:?}",
+                    field.name, field.rangeset
+                );
+                Self::from_conditional_field(field)
+            }
+            FieldEntry::Array(_array_field) => todo!(),
+            FieldEntry::ConstantField(_constant_field) => todo!(),
+            FieldEntry::Dynamic(_dynamic_field) => todo!(),
+            FieldEntry::Vector(_vector_field) => todo!(),
+        }
+    }
+
+    fn from_conditional_field(field: &ConditionalField) -> Option<Self> {
+        if let [range] = field.rangeset.as_slice() {
+            let mut bit = None;
+            for field in &field.fields {
+                trace!(
+                    "    Field: {:?} {:?}",
+                    field.field.name, field.field.rangeset
+                );
+                if bit.is_none() {
+                    bit = Self::from_field(&field.field, range.start);
+                } else if Self::from_field(&field.field, range.start) != bit {
+                    // If different options give a different RegisterBit, ignore them all to be
+                    // safe.
+                    return None;
+                }
+            }
+            bit
+        } else {
+            info!(
+                "Skipping conditional field with multiple ranges {:?}",
+                field.rangeset
+            );
+            None
+        }
+    }
+
+    fn from_field(field: &Field, offset: u32) -> Option<Self> {
+        if let [range] = field.rangeset.as_slice() {
+            if range.width == 1 {
+                let name = field.name.clone().unwrap();
+                Some(RegisterBit {
+                    name,
+                    index: offset + range.start,
+                })
+            } else {
+                info!("Skipping multi-bit field {:?} {:?}", field.name, range);
+                None
+            }
+        } else {
+            info!("Skipping field with multiple ranges {:?}", field.rangeset);
+            None
+        }
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct RegisterInfo {
+    pub name: String,
+    pub width: u32,
+    pub bits: Vec<RegisterBit>,
+    pub read: Option<Safety>,
+    pub write: Option<Safety>,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum Safety {
+    Safe,
+    Unsafe,
+}
+
+impl RegisterInfo {
+    fn from_json_register(register: &Register) -> RegisterInfo {
+        trace!("{:#?}", register);
+        let mut bits = Vec::new();
+        for fieldset in &register.fieldsets {
+            println!("fieldset: {:?}", fieldset.name);
+            for field_entry in &fieldset.values {
+                bits.extend(RegisterBit::from_field_entry(field_entry));
+            }
+        }
+        RegisterInfo {
+            name: register.name.clone(),
+            // TODO
+            width: 64,
+            bits,
+            // TODO
+            read: Some(Safety::Safe),
+            // TODO
+            write: None,
+        }
+    }
+
+    fn write_bitflags(&self, mut writer: impl Write) -> io::Result<()> {
+        writeln!(writer, "bitflags! {{")?;
+        writeln!(writer, "    /// {} system register value.", self.name)?;
+        writeln!(writer, "    #[derive(Clone, Copy, Debug, Eq, PartialEq)]")?;
+        writeln!(writer, "    #[repr(transparent)]")?;
+        writeln!(
+            writer,
+            "    pub struct {}: u{} {{",
+            camel_case(&self.name),
+            self.width
+        )?;
+        for bit in &self.bits {
+            writeln!(writer, "        /// {} bit.", bit.name)?;
+            writeln!(writer, "        const {} = 1 << {};", bit.name, bit.index)?;
+        }
+        writeln!(writer, "    }}")?;
+        writeln!(writer, "}}")?;
+        Ok(())
+    }
+
+    fn write_accessor(&self, mut writer: impl Write) -> io::Result<()> {
+        match (self.read, self.write) {
+            (None, None) => {}
+            (None, Some(write_safety)) => {
+                let safe_write = match write_safety {
+                    Safety::Safe => ", safe",
+                    Safety::Unsafe => "",
+                };
+                writeln!(
+                    writer,
+                    "write_sysreg!({}, u{}: {}{}, fake::SYSREGS);",
+                    self.name.to_lowercase(),
+                    self.width,
+                    camel_case(&self.name),
+                    safe_write,
+                )?;
+            }
+            (Some(read_safety), None) => {
+                let safe_read = match read_safety {
+                    Safety::Safe => ", safe",
+                    Safety::Unsafe => "",
+                };
+                writeln!(
+                    writer,
+                    "read_sysreg!({}, u{}: {}{}, fake::SYSREGS);",
+                    self.name.to_lowercase(),
+                    self.width,
+                    camel_case(&self.name),
+                    safe_read,
+                )?;
+            }
+            (Some(read_safety), Some(write_safety)) => {
+                let safe_read = match read_safety {
+                    Safety::Safe => ", safe_read",
+                    Safety::Unsafe => "",
+                };
+                let safe_write = match write_safety {
+                    Safety::Safe => ", safe_write",
+                    Safety::Unsafe => "",
+                };
+                writeln!(
+                    writer,
+                    "read_write_sysreg!({}, u{}: {}{}{}, fake::SYSREGS);",
+                    self.name.to_lowercase(),
+                    self.width,
+                    camel_case(&self.name),
+                    safe_read,
+                    safe_write,
+                )?;
+            }
+        }
+        Ok(())
+    }
+}
+
+fn camel_case(name: &str) -> String {
+    name.split('_')
+        .flat_map(|part| [part[0..1].to_uppercase(), part[1..].to_lowercase()])
+        .collect()
 }
 
 #[derive(Clone, Debug, Parser)]
 struct Args {
     /// Path to JSON system registers file.
     registers_json: PathBuf,
+    /// Path to output file.
+    output_file: PathBuf,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_camel_case() {
+        assert_eq!(camel_case("SCR_EL3"), "ScrEl3");
+        assert_eq!(camel_case("aBc_de_FGh_3a"), "AbcDeFgh3a");
+    }
 }
