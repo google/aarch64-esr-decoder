@@ -86,18 +86,79 @@ pub struct Fieldset {
     pub description: Description,
     pub display: Option<String>,
     pub name: Option<String>,
-    pub values: Vec<Fields>,
+    pub values: Vec<FieldEntry>,
     pub width: u32,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct Fields {
+#[serde(tag = "_type")]
+pub enum FieldEntry {
+    #[serde(rename = "Fields.Field")]
+    Field(Field),
+    #[serde(rename = "Fields.Reserved")]
+    Reserved(ReservedField),
+    #[serde(rename = "Fields.ImplementationDefined")]
+    ImplementationDefined(ImplementationDefinedField),
+    #[serde(rename = "Fields.ConditionalField")]
+    ConditionalField(ConditionalField),
+    #[serde(rename = "Fields.ConstantField")]
+    ConstantField(ConstantField),
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct Field {
     pub description: Description,
     pub name: Option<String>,
     pub rangeset: Vec<Range>,
     pub resets: Option<FieldResets>,
     pub values: Option<Values>,
     pub volatile: Option<bool>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ReservedField {
+    pub description: Description,
+    pub rangeset: Vec<Range>,
+    pub value: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ImplementationDefinedField {
+    pub constraints: Option<Vec<()>>,
+    pub description: Description,
+    pub display: Option<String>,
+    pub name: Option<String>,
+    pub rangeset: Vec<Range>,
+    pub resets: Option<FieldResets>,
+    pub volatile: Option<bool>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ConditionalField {
+    pub description: Description,
+    pub display: Option<String>,
+    pub fields: Vec<FieldCondition>,
+    pub name: Option<String>,
+    pub rangeset: Vec<Range>,
+    pub reservedtype: String,
+    pub resets: Option<FieldResets>,
+    pub volatile: Option<bool>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct FieldCondition {
+    pub condition: Condition,
+    pub field: Field,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ConstantField {
+    pub access: Option<()>,
+    pub description: Description,
+    pub name: Option<String>,
+    pub rangeset: Vec<Range>,
+    pub resets: Option<FieldResets>,
+    pub value: Value,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
