@@ -18,6 +18,7 @@ use eyre::Report;
 use std::{fs::read_to_string, path::PathBuf};
 
 fn main() -> Result<(), Report> {
+    pretty_env_logger::init();
     let args = Args::parse();
     let registers: Vec<RegisterEntry> =
         serde_json::from_str(&read_to_string(&args.registers_json)?)?;
