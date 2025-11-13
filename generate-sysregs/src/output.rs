@@ -21,7 +21,7 @@ pub fn write_all(mut writer: impl Write + Copy, registers: &[RegisterInfo]) -> i
     writeln!(writer, "use bitflags::bitflags;")?;
 
     for register in registers {
-        if !register.fields.is_empty() {
+        if register.use_struct() {
             writeln!(writer)?;
             register.write_bitflags(writer)?;
             register.write_impl(writer)?;
@@ -36,6 +36,13 @@ pub fn write_all(mut writer: impl Write + Copy, registers: &[RegisterInfo]) -> i
 }
 
 impl RegisterInfo {
+    /// Whether to use a wrapper bitflags struct type for the register, rather than just a raw
+    /// primitive type.
+    fn use_struct(&self) -> bool {
+        !self.fields.is_empty()
+    }
+
+    /// The name to use for the struct type for the register.
     fn struct_name(&self) -> String {
         camel_case(&self.name)
     }
@@ -57,7 +64,8 @@ impl RegisterInfo {
                 writeln!(
                     writer,
                     "        const {} = 1 << {};",
-                    field.name, field.index
+                    field.name.to_uppercase(),
+                    field.index,
                 )?;
             }
         }
@@ -107,6 +115,11 @@ impl RegisterInfo {
     }
 
     fn write_accessor(&self, mut writer: impl Write) -> io::Result<()> {
+        let register_type = if self.use_struct() {
+            format!("u{}: {}", self.width, self.struct_name())
+        } else {
+            format!("u{}", self.width)
+        };
         match (self.read, self.write) {
             (None, None) => {}
             (None, Some(write_safety)) => {
@@ -116,10 +129,9 @@ impl RegisterInfo {
                 };
                 writeln!(
                     writer,
-                    "write_sysreg!({}, u{}: {}{}, fake::SYSREGS);",
+                    "write_sysreg!({}, {}{}, fake::SYSREGS);",
                     self.name.to_lowercase(),
-                    self.width,
-                    camel_case(&self.name),
+                    register_type,
                     safe_write,
                 )?;
             }
@@ -130,10 +142,9 @@ impl RegisterInfo {
                 };
                 writeln!(
                     writer,
-                    "read_sysreg!({}, u{}: {}{}, fake::SYSREGS);",
+                    "read_sysreg!({}, {}{}, fake::SYSREGS);",
                     self.name.to_lowercase(),
-                    self.width,
-                    camel_case(&self.name),
+                    register_type,
                     safe_read,
                 )?;
             }
@@ -148,10 +159,9 @@ impl RegisterInfo {
                 };
                 writeln!(
                     writer,
-                    "read_write_sysreg!({}, u{}: {}{}{}, fake::SYSREGS);",
+                    "read_write_sysreg!({}, {}{}{}, fake::SYSREGS);",
                     self.name.to_lowercase(),
-                    self.width,
-                    camel_case(&self.name),
+                    register_type,
                     safe_read,
                     safe_write,
                 )?;
