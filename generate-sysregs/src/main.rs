@@ -15,7 +15,9 @@
 mod output;
 
 use crate::output::write_all;
-use arm_sysregs_json::{ConditionalField, Field, FieldEntry, Register, RegisterEntry};
+use arm_sysregs_json::{
+    ConditionalField, ConstantField, Field, FieldEntry, Register, RegisterEntry,
+};
 use clap::Parser;
 use eyre::Report;
 use log::{info, trace};
@@ -106,7 +108,13 @@ impl RegisterBit {
                 Self::from_conditional_field(field)
             }
             FieldEntry::Array(_array_field) => todo!(),
-            FieldEntry::ConstantField(_constant_field) => todo!(),
+            FieldEntry::ConstantField(constant_field) => {
+                info!(
+                    "  Constant field: {:?} {:?}",
+                    constant_field.name, constant_field.rangeset
+                );
+                Self::from_constant_field(constant_field)
+            }
             FieldEntry::Dynamic(_dynamic_field) => todo!(),
             FieldEntry::Vector(_vector_field) => todo!(),
         }
@@ -150,6 +158,20 @@ impl RegisterBit {
                 info!("Skipping multi-bit field {:?} {:?}", field.name, range);
                 None
             }
+        } else {
+            info!("Skipping field with multiple ranges {:?}", field.rangeset);
+            None
+        }
+    }
+
+    fn from_constant_field(field: &ConstantField) -> Option<Self> {
+        if let [range] = field.rangeset.as_slice() {
+            let name = field.name.clone().unwrap();
+            Some(RegisterField {
+                name,
+                index: range.start,
+                width: range.width,
+            })
         } else {
             info!("Skipping field with multiple ranges {:?}", field.rangeset);
             None
