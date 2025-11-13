@@ -21,8 +21,11 @@ pub fn write_all(mut writer: impl Write + Copy, registers: &[RegisterInfo]) -> i
     writeln!(writer, "use bitflags::bitflags;")?;
 
     for register in registers {
-        writeln!(writer)?;
-        register.write_bitflags(writer)?;
+        if !register.fields.is_empty() {
+            writeln!(writer)?;
+            register.write_bitflags(writer)?;
+            register.write_impl(writer)?;
+        }
     }
     writeln!(writer)?;
     for register in registers {
@@ -33,6 +36,10 @@ pub fn write_all(mut writer: impl Write + Copy, registers: &[RegisterInfo]) -> i
 }
 
 impl RegisterInfo {
+    fn struct_name(&self) -> String {
+        camel_case(&self.name)
+    }
+
     fn write_bitflags(&self, mut writer: impl Write) -> io::Result<()> {
         writeln!(writer, "bitflags! {{")?;
         writeln!(writer, "    /// {} system register value.", self.name)?;
@@ -41,15 +48,61 @@ impl RegisterInfo {
         writeln!(
             writer,
             "    pub struct {}: u{} {{",
-            camel_case(&self.name),
+            self.struct_name(),
             self.width
         )?;
-        for bit in &self.bits {
-            writeln!(writer, "        /// {} bit.", bit.name)?;
-            writeln!(writer, "        const {} = 1 << {};", bit.name, bit.index)?;
+        for field in &self.fields {
+            if field.width == 1 {
+                writeln!(writer, "        /// {} bit.", field.name)?;
+                writeln!(
+                    writer,
+                    "        const {} = 1 << {};",
+                    field.name, field.index
+                )?;
+            }
         }
         writeln!(writer, "    }}")?;
         writeln!(writer, "}}")?;
+        Ok(())
+    }
+
+    fn write_impl(&self, mut writer: impl Write) -> io::Result<()> {
+        if self.fields.iter().any(|field| field.width > 1) {
+            writeln!(writer)?;
+            writeln!(writer, "impl {} {{", self.struct_name())?;
+            let mut first = true;
+            for field in &self.fields {
+                if field.width > 1 {
+                    if !first {
+                        writeln!(writer)?;
+                        first = false;
+                    }
+
+                    let field_type = type_for_width(field.width);
+
+                    writeln!(
+                        writer,
+                        "    /// Returns the value of the {} field.",
+                        field.name
+                    )?;
+                    writeln!(
+                        writer,
+                        "    pub fn {}(self) -> {} {{",
+                        field.name.to_lowercase(),
+                        field_type
+                    )?;
+                    writeln!(
+                        writer,
+                        "        (self.bits() >> {}) as {} & {:#b}",
+                        field.index,
+                        field_type,
+                        u64::MAX >> (64 - field.width),
+                    )?;
+                    writeln!(writer, "    }}")?;
+                }
+            }
+            writeln!(writer, "}}")?;
+        }
         Ok(())
     }
 
@@ -112,6 +165,19 @@ fn camel_case(name: &str) -> String {
     name.split('_')
         .flat_map(|part| [part[0..1].to_uppercase(), part[1..].to_lowercase()])
         .collect()
+}
+
+/// Returns the smallest unsigned type that can hold at least the given number of bits
+fn type_for_width(width: u32) -> &'static str {
+    if width > 32 {
+        "u64"
+    } else if width > 16 {
+        "u32"
+    } else if width > 8 {
+        "u16"
+    } else {
+        "u8"
+    }
 }
 
 #[cfg(test)]
