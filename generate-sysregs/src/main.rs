@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+mod output;
+
+use crate::output::write_all;
 use arm_sysregs_json::{ConditionalField, Field, FieldEntry, Register, RegisterEntry};
 use clap::Parser;
 use eyre::Report;
 use log::{info, trace};
 use std::{
     fs::{File, read_to_string},
-    io::{self, Write},
     path::PathBuf,
 };
 
@@ -38,7 +40,7 @@ fn main() -> Result<(), Report> {
     Ok(())
 }
 
-fn generate_all(registers: &[RegisterEntry], mut output_file: &File) -> Result<(), Report> {
+fn generate_all(registers: &[RegisterEntry], output_file: &File) -> Result<(), Report> {
     let mut register_infos = Vec::new();
 
     for register in registers {
@@ -54,16 +56,7 @@ fn generate_all(registers: &[RegisterEntry], mut output_file: &File) -> Result<(
         }
     }
 
-    writeln!(output_file, "use bitflags::bitflags;")?;
-
-    for register in &register_infos {
-        writeln!(output_file)?;
-        register.write_bitflags(output_file)?;
-    }
-    for register in &register_infos {
-        writeln!(output_file)?;
-        register.write_accessor(output_file)?;
-    }
+    write_all(output_file, &register_infos)?;
 
     Ok(())
 }
@@ -181,86 +174,6 @@ impl RegisterInfo {
             write: None,
         }
     }
-
-    fn write_bitflags(&self, mut writer: impl Write) -> io::Result<()> {
-        writeln!(writer, "bitflags! {{")?;
-        writeln!(writer, "    /// {} system register value.", self.name)?;
-        writeln!(writer, "    #[derive(Clone, Copy, Debug, Eq, PartialEq)]")?;
-        writeln!(writer, "    #[repr(transparent)]")?;
-        writeln!(
-            writer,
-            "    pub struct {}: u{} {{",
-            camel_case(&self.name),
-            self.width
-        )?;
-        for bit in &self.bits {
-            writeln!(writer, "        /// {} bit.", bit.name)?;
-            writeln!(writer, "        const {} = 1 << {};", bit.name, bit.index)?;
-        }
-        writeln!(writer, "    }}")?;
-        writeln!(writer, "}}")?;
-        Ok(())
-    }
-
-    fn write_accessor(&self, mut writer: impl Write) -> io::Result<()> {
-        match (self.read, self.write) {
-            (None, None) => {}
-            (None, Some(write_safety)) => {
-                let safe_write = match write_safety {
-                    Safety::Safe => ", safe",
-                    Safety::Unsafe => "",
-                };
-                writeln!(
-                    writer,
-                    "write_sysreg!({}, u{}: {}{}, fake::SYSREGS);",
-                    self.name.to_lowercase(),
-                    self.width,
-                    camel_case(&self.name),
-                    safe_write,
-                )?;
-            }
-            (Some(read_safety), None) => {
-                let safe_read = match read_safety {
-                    Safety::Safe => ", safe",
-                    Safety::Unsafe => "",
-                };
-                writeln!(
-                    writer,
-                    "read_sysreg!({}, u{}: {}{}, fake::SYSREGS);",
-                    self.name.to_lowercase(),
-                    self.width,
-                    camel_case(&self.name),
-                    safe_read,
-                )?;
-            }
-            (Some(read_safety), Some(write_safety)) => {
-                let safe_read = match read_safety {
-                    Safety::Safe => ", safe_read",
-                    Safety::Unsafe => "",
-                };
-                let safe_write = match write_safety {
-                    Safety::Safe => ", safe_write",
-                    Safety::Unsafe => "",
-                };
-                writeln!(
-                    writer,
-                    "read_write_sysreg!({}, u{}: {}{}{}, fake::SYSREGS);",
-                    self.name.to_lowercase(),
-                    self.width,
-                    camel_case(&self.name),
-                    safe_read,
-                    safe_write,
-                )?;
-            }
-        }
-        Ok(())
-    }
-}
-
-fn camel_case(name: &str) -> String {
-    name.split('_')
-        .flat_map(|part| [part[0..1].to_uppercase(), part[1..].to_lowercase()])
-        .collect()
 }
 
 #[derive(Clone, Debug, Parser)]
@@ -269,15 +182,4 @@ struct Args {
     registers_json: PathBuf,
     /// Path to output file.
     output_file: PathBuf,
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_camel_case() {
-        assert_eq!(camel_case("SCR_EL3"), "ScrEl3");
-        assert_eq!(camel_case("aBc_de_FGh_3a"), "AbcDeFgh3a");
-    }
 }
