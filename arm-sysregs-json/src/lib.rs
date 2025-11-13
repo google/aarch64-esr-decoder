@@ -99,10 +99,16 @@ pub enum FieldEntry {
     Reserved(ReservedField),
     #[serde(rename = "Fields.ImplementationDefined")]
     ImplementationDefined(ImplementationDefinedField),
+    #[serde(rename = "Fields.Array")]
+    Array(ArrayField),
+    #[serde(rename = "Fields.Vector")]
+    Vector(VectorField),
     #[serde(rename = "Fields.ConditionalField")]
     ConditionalField(ConditionalField),
     #[serde(rename = "Fields.ConstantField")]
     ConstantField(ConstantField),
+    #[serde(rename = "Fields.Dynamic")]
+    Dynamic(DynamicField),
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -134,6 +140,45 @@ pub struct ImplementationDefinedField {
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ArrayField {
+    pub access: Option<()>,
+    pub description: Description,
+    pub display: Option<String>,
+    pub index_variable: String,
+    pub indexes: Vec<Range>,
+    pub name: Option<String>,
+    pub rangeset: Vec<Range>,
+    pub resets: Option<FieldResets>,
+    pub values: Option<Values>,
+    pub volatile: Option<bool>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct VectorField {
+    pub access: Option<()>,
+    pub description: Description,
+    pub display: Option<String>,
+    pub index_variable: String,
+    pub indexes: Vec<Range>,
+    pub name: Option<String>,
+    pub rangeset: Vec<Range>,
+    pub reserved_type: Option<String>,
+    pub resets: Option<FieldResets>,
+    pub size: Vec<ConditionValue>,
+    pub values: Option<Values>,
+    pub volatile: Option<bool>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ConditionValue {
+    pub condition: Condition,
+    pub value: AstValue,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct AstValue {}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ConditionalField {
     pub description: Description,
     pub display: Option<String>,
@@ -159,6 +204,17 @@ pub struct ConstantField {
     pub rangeset: Vec<Range>,
     pub resets: Option<FieldResets>,
     pub value: Value,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct DynamicField {
+    pub description: Description,
+    pub display: Option<String>,
+    pub instances: Vec<Fieldset>,
+    pub name: Option<String>,
+    pub rangeset: Vec<Range>,
+    pub resets: Option<FieldResets>,
+    pub volatile: Option<bool>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
