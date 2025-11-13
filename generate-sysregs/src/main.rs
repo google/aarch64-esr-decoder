@@ -325,6 +325,8 @@ struct RegisterInfo {
     pub name: String,
     pub width: u32,
     pub fields: Vec<RegisterField>,
+    /// All the bits which are RES1.
+    pub res1: u64,
     pub read: Option<Safety>,
     pub write: Option<Safety>,
 }
@@ -340,6 +342,7 @@ impl RegisterInfo {
         trace!("{:#?}", register);
         let mut fields = Vec::new();
         let mut writable = false;
+        let mut res1 = 0;
         for fieldset in &register.fieldsets {
             for field_entry in &fieldset.values {
                 fields.extend(RegisterField::from_field_entry(field_entry));
@@ -348,6 +351,13 @@ impl RegisterInfo {
                     FieldEntry::Field(_) | FieldEntry::ConditionalField(_)
                 ) {
                     writable = true;
+                }
+                if let FieldEntry::Reserved(field) = field_entry
+                    && field.value == "RES1"
+                {
+                    for range in &field.rangeset {
+                        res1 |= ones(range.width) << range.start
+                    }
                 }
             }
         }
@@ -358,6 +368,7 @@ impl RegisterInfo {
             // TODO
             width: 64,
             fields,
+            res1,
             read: Some(Safety::Safe),
             // TODO
             write: if writable { Some(Safety::Unsafe) } else { None },
@@ -374,4 +385,9 @@ struct Args {
     /// List of registers to include
     #[arg(long)]
     registers: Option<String>,
+}
+
+/// Returns a value with the given number of 1 bits, starting at the least significant bit.
+const fn ones(n: u32) -> u64 {
+    u64::MAX >> (64 - n)
 }
