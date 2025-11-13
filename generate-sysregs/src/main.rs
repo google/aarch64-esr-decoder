@@ -198,9 +198,16 @@ impl RegisterInfo {
     fn from_json_register(register: &Register) -> RegisterInfo {
         trace!("{:#?}", register);
         let mut fields = Vec::new();
+        let mut writable = false;
         for fieldset in &register.fieldsets {
             for field_entry in &fieldset.values {
                 fields.extend(RegisterField::from_field_entry(field_entry));
+                if matches!(
+                    field_entry,
+                    FieldEntry::Field(_) | FieldEntry::ConditionalField(_)
+                ) {
+                    writable = true;
+                }
             }
         }
         RegisterInfo {
@@ -211,7 +218,7 @@ impl RegisterInfo {
             // TODO
             read: Some(Safety::Safe),
             // TODO
-            write: None,
+            write: if writable { Some(Safety::Unsafe) } else { None },
         }
     }
 }
