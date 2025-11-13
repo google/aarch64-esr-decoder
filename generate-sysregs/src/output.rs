@@ -29,11 +29,11 @@ mod aarch64;
 #[cfg(any(test, feature = \"fakes\"))]
 pub mod fake;
 mod macros;
-
-#[doc(hidden)]
-pub use paste as _paste;
+mod manual;
 
 use bitflags::bitflags;
+#[doc(hidden)]
+pub use paste as _paste;
 "
         .as_bytes(),
     )?;
