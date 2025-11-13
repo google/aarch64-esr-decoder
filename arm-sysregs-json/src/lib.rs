@@ -193,7 +193,7 @@ pub struct ConditionalField {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct FieldCondition {
     pub condition: Condition,
-    pub field: Field,
+    pub field: FieldEntry,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
