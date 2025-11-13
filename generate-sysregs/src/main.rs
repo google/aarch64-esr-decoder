@@ -215,7 +215,6 @@ impl RegisterInfo {
             // TODO
             width: 64,
             fields,
-            // TODO
             read: Some(Safety::Safe),
             // TODO
             write: if writable { Some(Safety::Unsafe) } else { None },
