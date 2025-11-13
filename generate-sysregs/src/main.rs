@@ -76,7 +76,10 @@ impl RegisterBit {
                 trace!("  Reserved field: {:?}", field.rangeset);
                 None
             }
-            FieldEntry::ImplementationDefined(_implementation_defined_field) => todo!(),
+            FieldEntry::ImplementationDefined(implementation_defined_field) => {
+                info!("Skipping implementation defined field {implementation_defined_field:?}");
+                None
+            }
             FieldEntry::ConditionalField(field) => {
                 trace!(
                     "  Conditional field: {:?}, {:?}",
