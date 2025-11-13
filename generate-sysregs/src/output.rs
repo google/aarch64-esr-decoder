@@ -132,17 +132,37 @@ impl RegisterInfo {
         }
         for field in &self.fields {
             if field.width == 1 {
-                if let Some(description) = &field.description {
-                    writeln!(writer, "        /// {}", description)?;
+                if let Some(array_info) = &field.array_info {
+                    let placeholder = array_info.placeholder();
+                    for i in array_info.indices.clone() {
+                        writeln!(writer, "        /// {} bit {}.", field.name, i)?;
+                        if let Some(description) = &field.description {
+                            writeln!(writer, "        ///")?;
+                            writeln!(writer, "        /// {}", description)?;
+                        }
+                        writeln!(
+                            writer,
+                            "        const {} = 1 << {};",
+                            field
+                                .name
+                                .to_uppercase()
+                                .replace(&placeholder, &format!("{}", i)),
+                            field.index,
+                        )?;
+                    }
                 } else {
-                    writeln!(writer, "        /// {} bit.", field.name)?;
+                    if let Some(description) = &field.description {
+                        writeln!(writer, "        /// {}", description)?;
+                    } else {
+                        writeln!(writer, "        /// {} bit.", field.name)?;
+                    }
+                    writeln!(
+                        writer,
+                        "        const {} = 1 << {};",
+                        field.name.to_uppercase(),
+                        field.index,
+                    )?;
                 }
-                writeln!(
-                    writer,
-                    "        const {} = 1 << {};",
-                    field.name.to_uppercase(),
-                    field.index,
-                )?;
             }
         }
         writeln!(writer, "    }}")?;
@@ -165,25 +185,62 @@ impl RegisterInfo {
 
                     let field_type = type_for_width(field.width);
 
-                    writeln!(
-                        writer,
-                        "    /// Returns the value of the {} field.",
-                        field.name
-                    )?;
-                    writeln!(
-                        writer,
-                        "    pub const fn {}(self) -> {} {{",
-                        field.name.to_lowercase(),
-                        field_type
-                    )?;
-                    writeln!(
-                        writer,
-                        "        (self.bits() >> {}) as {} & {:#b}",
-                        field.index,
-                        field_type,
-                        ones(field.width),
-                    )?;
-                    writeln!(writer, "    }}")?;
+                    if let Some(array_info) = &field.array_info {
+                        writeln!(
+                            writer,
+                            "    /// Returns the value of the given {} field.",
+                            field.name,
+                        )?;
+                        writeln!(
+                            writer,
+                            "    pub const fn {}(self, {}: u32) -> {} {{",
+                            field
+                                .name
+                                .to_lowercase()
+                                .replace(&array_info.placeholder(), ""),
+                            array_info.index_variable,
+                            field_type,
+                        )?;
+                        writeln!(
+                            writer,
+                            "        assert!({} >= {} && {} < {});",
+                            array_info.index_variable,
+                            array_info.indices.start,
+                            array_info.index_variable,
+                            array_info.indices.end,
+                        )?;
+                        writeln!(
+                            writer,
+                            "        (self.bits() >> ({} + ({} - {}) * {})) as {} & {:#b}",
+                            field.index,
+                            array_info.index_variable,
+                            array_info.indices.start,
+                            field.width,
+                            field_type,
+                            ones(field.width),
+                        )?;
+                        writeln!(writer, "    }}")?;
+                    } else {
+                        writeln!(
+                            writer,
+                            "    /// Returns the value of the {} field.",
+                            field.name
+                        )?;
+                        writeln!(
+                            writer,
+                            "    pub const fn {}(self) -> {} {{",
+                            field.name.to_lowercase(),
+                            field_type
+                        )?;
+                        writeln!(
+                            writer,
+                            "        (self.bits() >> {}) as {} & {:#b}",
+                            field.index,
+                            field_type,
+                            ones(field.width),
+                        )?;
+                        writeln!(writer, "    }}")?;
+                    }
                 }
             }
             writeln!(writer, "}}")?;
