@@ -210,6 +210,7 @@ impl RegisterInfo {
                 }
             }
         }
+        fields.sort_by_key(|field| field.index);
         RegisterInfo {
             name: register.name.clone(),
             // TODO
