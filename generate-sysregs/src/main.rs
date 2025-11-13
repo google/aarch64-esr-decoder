@@ -16,7 +16,7 @@ mod output;
 
 use crate::output::{write_fake, write_lib};
 use arm_sysregs_json::{
-    ConditionalField, ConstantField, Field, FieldEntry, Register, RegisterEntry,
+    ArrayField, ConditionalField, ConstantField, Field, FieldEntry, Register, RegisterEntry,
 };
 use clap::Parser;
 use eyre::Report;
@@ -24,6 +24,7 @@ use log::{info, trace};
 use std::{
     collections::BTreeMap,
     fs::{File, read_to_string},
+    ops::Range,
     path::PathBuf,
     sync::LazyLock,
 };
@@ -226,14 +227,30 @@ struct RegisterField {
     pub index: u32,
     /// The width of the field in bits.
     pub width: u32,
+    /// Information about the array, if it is an array field.
+    pub array_info: Option<ArrayInfo>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ArrayInfo {
+    /// The range of entries in the array.
+    pub indices: Range<u32>,
+    /// The placeholder variable name.
+    pub index_variable: String,
+}
+
+impl ArrayInfo {
+    fn placeholder(&self) -> String {
+        format!("<{}>", self.index_variable)
+    }
 }
 
 impl RegisterField {
-    fn from_field_entry(field_entry: &FieldEntry) -> Option<Self> {
+    fn from_field_entry(field_entry: &FieldEntry, offset: u32) -> Option<Self> {
         match field_entry {
             FieldEntry::Field(field) => {
                 trace!("  Field: {:?} {:?}", field.name, field.rangeset);
-                Self::from_field(field, 0)
+                Self::from_field(field, offset)
             }
             FieldEntry::Reserved(field) => {
                 trace!("  Reserved field: {:?}", field.rangeset);
@@ -248,32 +265,34 @@ impl RegisterField {
                     "  Conditional field: {:?}, {:?}",
                     field.name, field.rangeset
                 );
-                Self::from_conditional_field(field)
+                Self::from_conditional_field(field, offset)
             }
-            FieldEntry::Array(_array_field) => todo!(),
+            FieldEntry::Array(field) => {
+                info!(
+                    "  Array field: {:?}, {:?}, {}, {:?}",
+                    field.name, field.rangeset, field.index_variable, field.indexes
+                );
+                Self::from_array_field(field, offset)
+            }
             FieldEntry::ConstantField(constant_field) => {
                 info!(
                     "  Constant field: {:?} {:?}",
                     constant_field.name, constant_field.rangeset
                 );
-                Self::from_constant_field(constant_field)
+                Self::from_constant_field(constant_field, offset)
             }
             FieldEntry::Dynamic(_dynamic_field) => todo!(),
             FieldEntry::Vector(_vector_field) => todo!(),
         }
     }
 
-    fn from_conditional_field(field: &ConditionalField) -> Option<Self> {
+    fn from_conditional_field(field: &ConditionalField, offset: u32) -> Option<Self> {
         if let [range] = field.rangeset.as_slice() {
             let mut bit = None;
             for field in &field.fields {
-                trace!(
-                    "    Field: {:?} {:?}",
-                    field.field.name, field.field.rangeset
-                );
                 if bit.is_none() {
-                    bit = Self::from_field(&field.field, range.start);
-                } else if Self::from_field(&field.field, range.start) != bit {
+                    bit = Self::from_field_entry(&field.field, offset + range.start);
+                } else if Self::from_field_entry(&field.field, offset + range.start) != bit {
                     // If different options give a different RegisterField, ignore them all to be
                     // safe.
                     return None;
@@ -297,6 +316,7 @@ impl RegisterField {
                 description: None,
                 index: offset + range.start,
                 width: range.width,
+                array_info: None,
             })
         } else {
             info!("Skipping field with multiple ranges {:?}", field.rangeset);
@@ -304,14 +324,42 @@ impl RegisterField {
         }
     }
 
-    fn from_constant_field(field: &ConstantField) -> Option<Self> {
+    fn from_array_field(field: &ArrayField, offset: u32) -> Option<Self> {
+        if let [range] = field.rangeset.as_slice() {
+            if let [array_range] = field.indexes.as_slice() {
+                let name = field.name.clone().unwrap();
+                Some(RegisterField {
+                    name,
+                    description: None,
+                    index: offset + range.start,
+                    width: range.width / array_range.width,
+                    array_info: Some(ArrayInfo {
+                        indices: array_range.start..array_range.start + array_range.width,
+                        index_variable: field.index_variable.clone(),
+                    }),
+                })
+            } else {
+                info!(
+                    "Skipping field with multiple array indices {:?}",
+                    field.rangeset
+                );
+                None
+            }
+        } else {
+            info!("Skipping field with multiple ranges {:?}", field.rangeset);
+            None
+        }
+    }
+
+    fn from_constant_field(field: &ConstantField, offset: u32) -> Option<Self> {
         if let [range] = field.rangeset.as_slice() {
             let name = field.name.clone().unwrap();
             Some(RegisterField {
                 name,
                 description: None,
-                index: range.start,
+                index: offset + range.start,
                 width: range.width,
+                array_info: None,
             })
         } else {
             info!("Skipping field with multiple ranges {:?}", field.rangeset);
@@ -345,7 +393,7 @@ impl RegisterInfo {
         let mut res1 = 0;
         for fieldset in &register.fieldsets {
             for field_entry in &fieldset.values {
-                fields.extend(RegisterField::from_field_entry(field_entry));
+                fields.extend(RegisterField::from_field_entry(field_entry, 0));
                 if matches!(
                     field_entry,
                     FieldEntry::Field(_) | FieldEntry::ConditionalField(_)
