@@ -17,8 +17,26 @@
 use crate::{RegisterInfo, Safety};
 use std::io::{self, Write};
 
-pub fn write_all(mut writer: impl Write + Copy, registers: &[RegisterInfo]) -> io::Result<()> {
-    writeln!(writer, "use bitflags::bitflags;")?;
+pub fn write_lib(mut writer: impl Write + Copy, registers: &[RegisterInfo]) -> io::Result<()> {
+    writer.write_all(
+        "\
+//! Access to Arm CPU system registers.
+
+#![cfg_attr(not(any(test, feature = \"fakes\")), no_std)]
+
+#[cfg(not(any(test, feature = \"fakes\")))]
+mod aarch64;
+#[cfg(any(test, feature = \"fakes\"))]
+pub mod fake;
+mod macros;
+
+#[doc(hidden)]
+pub use paste as _paste;
+
+use bitflags::bitflags;
+"
+        .as_bytes(),
+    )?;
 
     for register in registers {
         if register.use_struct() {
@@ -32,15 +50,17 @@ pub fn write_all(mut writer: impl Write + Copy, registers: &[RegisterInfo]) -> i
         register.write_accessor(writer)?;
     }
 
-    writeln!(writer)?;
-    writeln!(writer, "pub mod fake {{")?;
-    writeln!(writer, "    /// A set of fake system registers.")?;
-    writeln!(writer, "    #[derive(Clone, Debug, Eq, PartialEq)]")?;
-    writeln!(writer, "    pub struct SystemRegisters {{")?;
+    Ok(())
+}
+
+pub fn write_fake(mut writer: impl Write + Copy, registers: &[RegisterInfo]) -> io::Result<()> {
+    writeln!(writer, "/// A set of fake system registers.")?;
+    writeln!(writer, "#[derive(Clone, Debug, Eq, PartialEq)]")?;
+    writeln!(writer, "pub struct SystemRegisters {{")?;
     for register in registers {
         writeln!(
             writer,
-            "        /// Fake value for the {} system register.",
+            "    /// Fake value for the {} system register.",
             register.name
         )?;
         let register_type = if register.use_struct() {
@@ -50,33 +70,28 @@ pub fn write_all(mut writer: impl Write + Copy, registers: &[RegisterInfo]) -> i
         };
         writeln!(
             writer,
-            "        pub {}: {},",
+            "    pub {}: {},",
             register.name.to_lowercase(),
             register_type
         )?;
     }
-    writeln!(writer, "    }}")?;
+    writeln!(writer, "}}")?;
     writeln!(writer)?;
-    writeln!(writer, "    impl SystemRegisters {{")?;
-    writeln!(writer, "        const fn new() -> Self {{")?;
-    writeln!(writer, "            Self {{")?;
+    writeln!(writer, "impl SystemRegisters {{")?;
+    writeln!(writer, "    const fn new() -> Self {{")?;
+    writeln!(writer, "        Self {{")?;
     for register in registers {
         if register.use_struct() {
             writeln!(
                 writer,
-                "                {}: {}::empty(),",
+                "            {}: {}::empty(),",
                 register.name.to_lowercase(),
                 register.struct_name(),
             )?;
         } else {
-            writeln!(
-                writer,
-                "                {}: 0,",
-                register.name.to_lowercase(),
-            )?;
+            writeln!(writer, "            {}: 0,", register.name.to_lowercase(),)?;
         }
     }
-    writeln!(writer, "            }}")?;
     writeln!(writer, "        }}")?;
     writeln!(writer, "    }}")?;
     writeln!(writer, "}}")?;
