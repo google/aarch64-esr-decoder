@@ -157,9 +157,10 @@ impl RegisterInfo {
             let mut first = true;
             for field in &self.fields {
                 if field.width > 1 {
-                    if !first {
-                        writeln!(writer)?;
+                    if first {
                         first = false;
+                    } else {
+                        writeln!(writer)?;
                     }
 
                     let field_type = type_for_width(field.width);
