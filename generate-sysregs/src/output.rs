@@ -191,6 +191,10 @@ impl RegisterInfo {
                             "    /// Returns the value of the given {} field.",
                             field.name,
                         )?;
+                        if let Some(description) = &field.description {
+                            writeln!(writer, "    ///")?;
+                            writeln!(writer, "    /// {description}")?;
+                        }
                         writeln!(
                             writer,
                             "    pub const fn {}(self, {}: u32) -> {} {{",
@@ -226,6 +230,10 @@ impl RegisterInfo {
                             "    /// Returns the value of the {} field.",
                             field.name
                         )?;
+                        if let Some(description) = &field.description {
+                            writeln!(writer, "    ///")?;
+                            writeln!(writer, "    /// {description}")?;
+                        }
                         writeln!(
                             writer,
                             "    pub const fn {}(self) -> {} {{",
