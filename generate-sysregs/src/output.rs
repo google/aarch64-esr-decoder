@@ -124,7 +124,11 @@ impl RegisterInfo {
         )?;
         for field in &self.fields {
             if field.width == 1 {
-                writeln!(writer, "        /// {} bit.", field.name)?;
+                if let Some(description) = &field.description {
+                    writeln!(writer, "        /// {}", description)?;
+                } else {
+                    writeln!(writer, "        /// {} bit.", field.name)?;
+                }
                 writeln!(
                     writer,
                     "        const {} = 1 << {};",

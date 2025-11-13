@@ -22,9 +22,133 @@ use clap::Parser;
 use eyre::Report;
 use log::{info, trace};
 use std::{
+    collections::BTreeMap,
     fs::{File, read_to_string},
     path::PathBuf,
+    sync::LazyLock,
 };
+
+static FIELD_DESCRIPTIONS: LazyLock<BTreeMap<(&'static str, &'static str), &'static str>> =
+    LazyLock::new(|| {
+        [
+            (("SCR_EL3", "NS"), "Non-secure."),
+            (("SCR_EL3", "IRQ"), "Take physical IRQs at EL3."),
+            (("SCR_EL3", "FIQ"), "Take physical FIQs at EL3."),
+            (
+                ("SCR_EL3", "EA"),
+                "Take external abort and SError exceptions at EL3.",
+            ),
+            (("SCR_EL3", "SMD"), "Disable SMC instructions."),
+            (("SCR_EL3", "HCE"), "Enable HVC instructions."),
+            (
+                ("SCR_EL3", "SIF"),
+                "Disable execution from non-secure memory.",
+            ),
+            (("SCR_EL3", "RW"), "Enable AArch64 in lower ELs."),
+            (("SCR_EL3", "ST"), "Trap physical secure timer to EL3."),
+            (("SCR_EL3", "TWI"), "Trap WFI to EL3."),
+            (("SCR_EL3", "TWE"), "Trap WFE to EL3."),
+            (("SCR_EL3", "TLOR"), "Trap LOR register access to EL3."),
+            (
+                ("SCR_EL3", "TERR"),
+                "Trap error record register access to EL3.",
+            ),
+            (("SCR_EL3", "APK"), "Don't trap PAC key registers to EL3."),
+            (("SCR_EL3", "API"), "Don't trap PAuth instructions to EL3."),
+            (("SCR_EL3", "EEL2"), "Enable Secure EL2."),
+            (
+                ("SCR_EL3", "EASE"),
+                "Synchronous external aborts are taken as SErrors.",
+            ),
+            (("SCR_EL3", "NMEA"), "Take SError exceptions at EL3."),
+            (("SCR_EL3", "FIEN"), "Enable fault injection at lower ELs."),
+            (("SCR_EL3", "TID3"), "Trap ID group 3 registers to EL3."),
+            (("SCR_EL3", "TID5"), "Trap ID group 5 register to EL3."),
+            (("SCR_EL3", "EnSCXT"), "Enable SCXT at lower ELs."),
+            (("SCR_EL3", "ATA"), "Enable memory tagging at lower ELs."),
+            (("SCR_EL3", "FGTEn"), "Enable fine-grained traps to EL2."),
+            (("SCR_EL3", "ECVEn"), "Enable access to CNTPOFF_EL2."),
+            (
+                ("SCR_EL3", "TWEDEn"),
+                "Enable a configurable delay for WFE traps.",
+            ),
+            (("SCR_EL3", "TME"), "Enable access to TME at lower ELs."),
+            (
+                ("SCR_EL3", "AMVOFFEN"),
+                "Enable acivity monitors virtual offsets.",
+            ),
+            (("SCR_EL3", "EnAS0"), "Enable ST64BV0 at lower ELs."),
+            (("SCR_EL3", "ADEn"), "Enable ACCDATA_EL1 at lower ELs."),
+            (("SCR_EL3", "HXEn"), "Enable HCRX_EL2."),
+            (("SCR_EL3", "GCSEn"), "Enable gaurded control stack."),
+            (("SCR_EL3", "TRNDR"), "Trap RNDR and RNDRRS to EL3."),
+            (("SCR_EL3", "EnTP2"), "Enable TPIDR2_EL0 at lower ELs."),
+            (
+                ("SCR_EL3", "RCWMASKEn"),
+                "Enable RCW and RCWS mask registers at lower ELs.",
+            ),
+            (
+                ("SCR_EL3", "TCR2En"),
+                "Enable TCR2_ELx registers at lower ELs.",
+            ),
+            (
+                ("SCR_EL3", "SCTLR2En"),
+                "Enable SCTLR2_ELx rogisters at lower ELs.",
+            ),
+            (
+                ("SCR_EL3", "PIEn"),
+                "Enable permission indirection and overlay registers at lower ELs.",
+            ),
+            (
+                ("SCR_EL3", "AIEn"),
+                "Enable MAIR2_ELx and AMAIR2_ELx at lower ELs.",
+            ),
+            (
+                ("SCR_EL3", "D128En"),
+                "Enable 128-bit system registers at  lower ELs.",
+            ),
+            (("SCR_EL3", "GPF"), "Route GPFs to EL3."),
+            (("SCR_EL3", "MECEn"), "Enable MECID registers at EL2."),
+            (("SCR_EL3", "EnFPM"), "Enable access to FPMR at lower ELs."),
+            (
+                ("SCR_EL3", "TMEA"),
+                "Take synchronous external abort and physical SError exception to EL3.",
+            ),
+            (
+                ("SCR_EL3", "TWERR"),
+                "Trap writes to Error Record registers to EL3.",
+            ),
+            (
+                ("SCR_EL3", "PFAREn"),
+                "Enable access to physical fault address registers at lower ELs.",
+            ),
+            (
+                ("SCR_EL3", "SRMASKEn"),
+                "Enable access to mask registers at lower ELs.",
+            ),
+            (
+                ("SCR_EL3", "EnIDCP128"),
+                "Enable implementation-defined 128-bit system registers.",
+            ),
+            (
+                ("SCR_EL3", "DSE"),
+                "A delegated SError exception is pending.",
+            ),
+            (("SCR_EL3", "EnDSE"), "Enable delegated SError exceptions."),
+            (("SCR_EL3", "FGTEn2"), "Enable fine-grained traps to EL2."),
+            (
+                ("SCR_EL3", "HDBSSEn"),
+                "Enable HDBSSBR_EL2 and HDBSSPROD_EL2 registers at EL2.",
+            ),
+            (
+                ("SCR_EL3", "HACDBSEn"),
+                "Enable HACDBSBR_EL2 and HACDBSCONS_EL2 registers at EL2.",
+            ),
+            (("SCR_EL3", "NSE"), "Non-secure realm world bit."),
+        ]
+        .into_iter()
+        .collect()
+    });
 
 fn main() -> Result<(), Report> {
     pretty_env_logger::init();
@@ -42,11 +166,24 @@ fn main() -> Result<(), Report> {
         .registers
         .as_ref()
         .map(|registers| registers.split(',').collect::<Vec<_>>());
-    let register_infos = generate_all(&registers, registers_filter.as_deref());
+    let mut register_infos = generate_all(&registers, registers_filter.as_deref());
+    add_descriptions(&mut register_infos);
     write_lib(&output_lib, &register_infos)?;
     write_fake(&output_fake, &register_infos)?;
 
     Ok(())
+}
+
+fn add_descriptions(registers: &mut Vec<RegisterInfo>) {
+    for register in registers {
+        for field in &mut register.fields {
+            if let Some(description) =
+                FIELD_DESCRIPTIONS.get(&(register.name.as_str(), field.name.as_str()))
+            {
+                field.description = Some(description.to_string());
+            }
+        }
+    }
 }
 
 fn generate_all(
@@ -83,6 +220,8 @@ fn filter_matches(filter: Option<&[&str]>, register: &Register) -> bool {
 struct RegisterField {
     /// The name of the field.
     pub name: String,
+    /// The description of the field, if available.
+    pub description: Option<String>,
     /// The index of the least significant bit of the field.
     pub index: u32,
     /// The width of the field in bits.
@@ -155,6 +294,7 @@ impl RegisterField {
             let name = field.name.clone().unwrap();
             Some(RegisterField {
                 name,
+                description: None,
                 index: offset + range.start,
                 width: range.width,
             })
@@ -169,6 +309,7 @@ impl RegisterField {
             let name = field.name.clone().unwrap();
             Some(RegisterField {
                 name,
+                description: None,
                 index: range.start,
                 width: range.width,
             })
