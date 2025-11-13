@@ -80,12 +80,16 @@ fn filter_matches(filter: Option<&[&str]>, register: &Register) -> bool {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-struct RegisterBit {
+struct RegisterField {
+    /// The name of the field.
     pub name: String,
+    /// The index of the least significant bit of the field.
     pub index: u32,
+    /// The width of the field in bits.
+    pub width: u32,
 }
 
-impl RegisterBit {
+impl RegisterField {
     fn from_field_entry(field_entry: &FieldEntry) -> Option<Self> {
         match field_entry {
             FieldEntry::Field(field) => {
@@ -131,7 +135,7 @@ impl RegisterBit {
                 if bit.is_none() {
                     bit = Self::from_field(&field.field, range.start);
                 } else if Self::from_field(&field.field, range.start) != bit {
-                    // If different options give a different RegisterBit, ignore them all to be
+                    // If different options give a different RegisterField, ignore them all to be
                     // safe.
                     return None;
                 }
@@ -148,16 +152,12 @@ impl RegisterBit {
 
     fn from_field(field: &Field, offset: u32) -> Option<Self> {
         if let [range] = field.rangeset.as_slice() {
-            if range.width == 1 {
-                let name = field.name.clone().unwrap();
-                Some(RegisterBit {
-                    name,
-                    index: offset + range.start,
-                })
-            } else {
-                info!("Skipping multi-bit field {:?} {:?}", field.name, range);
-                None
-            }
+            let name = field.name.clone().unwrap();
+            Some(RegisterField {
+                name,
+                index: offset + range.start,
+                width: range.width,
+            })
         } else {
             info!("Skipping field with multiple ranges {:?}", field.rangeset);
             None
@@ -183,7 +183,7 @@ impl RegisterBit {
 struct RegisterInfo {
     pub name: String,
     pub width: u32,
-    pub bits: Vec<RegisterBit>,
+    pub fields: Vec<RegisterField>,
     pub read: Option<Safety>,
     pub write: Option<Safety>,
 }
@@ -197,17 +197,17 @@ enum Safety {
 impl RegisterInfo {
     fn from_json_register(register: &Register) -> RegisterInfo {
         trace!("{:#?}", register);
-        let mut bits = Vec::new();
+        let mut fields = Vec::new();
         for fieldset in &register.fieldsets {
             for field_entry in &fieldset.values {
-                bits.extend(RegisterBit::from_field_entry(field_entry));
+                fields.extend(RegisterField::from_field_entry(field_entry));
             }
         }
         RegisterInfo {
             name: register.name.clone(),
             // TODO
             width: 64,
-            bits,
+            fields,
             // TODO
             read: Some(Safety::Safe),
             // TODO
