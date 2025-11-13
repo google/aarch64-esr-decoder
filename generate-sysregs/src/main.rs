@@ -146,6 +146,10 @@ static FIELD_DESCRIPTIONS: LazyLock<BTreeMap<(&'static str, &'static str), &'sta
                 "Enable HACDBSBR_EL2 and HACDBSCONS_EL2 registers at EL2.",
             ),
             (("SCR_EL3", "NSE"), "Non-secure realm world bit."),
+            (
+                ("CLIDR_EL1", "LoC"),
+                "Level of Coherence for the cache hierarchy.",
+            ),
         ]
         .into_iter()
         .collect()
