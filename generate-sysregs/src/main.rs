@@ -14,7 +14,7 @@
 
 mod output;
 
-use crate::output::write_all;
+use crate::output::{write_fake, write_lib};
 use arm_sysregs_json::{
     ConditionalField, ConstantField, Field, FieldEntry, Register, RegisterEntry,
 };
@@ -36,21 +36,23 @@ fn main() -> Result<(), Report> {
         registers.len(),
         args.registers_json.display()
     );
-    let mut output_file = File::create(args.output_file)?;
+    let output_lib = File::create(args.output_directory.join("lib.rs"))?;
+    let output_fake = File::create(args.output_directory.join("fake.rs"))?;
     let registers_filter = args
         .registers
         .as_ref()
         .map(|registers| registers.split(',').collect::<Vec<_>>());
-    generate_all(&registers, &mut output_file, registers_filter.as_deref())?;
+    let register_infos = generate_all(&registers, registers_filter.as_deref());
+    write_lib(&output_lib, &register_infos)?;
+    write_fake(&output_fake, &register_infos)?;
 
     Ok(())
 }
 
 fn generate_all(
     registers: &[RegisterEntry],
-    output_file: &File,
     registers_filter: Option<&[&str]>,
-) -> Result<(), Report> {
+) -> Vec<RegisterInfo> {
     let mut register_infos = Vec::new();
 
     for register in registers {
@@ -64,9 +66,7 @@ fn generate_all(
         }
     }
 
-    write_all(output_file, &register_infos)?;
-
-    Ok(())
+    register_infos
 }
 
 fn filter_matches(filter: Option<&[&str]>, register: &Register) -> bool {
@@ -227,8 +227,8 @@ impl RegisterInfo {
 struct Args {
     /// Path to JSON system registers file.
     registers_json: PathBuf,
-    /// Path to output file.
-    output_file: PathBuf,
+    /// Path to output directory.
+    output_directory: PathBuf,
     /// List of registers to include
     #[arg(long)]
     registers: Option<String>,
