@@ -170,18 +170,21 @@ fn main() -> Result<(), Report> {
         .as_ref()
         .map(|registers| registers.split(',').collect::<Vec<_>>());
     let mut register_infos = generate_all(&registers, registers_filter.as_deref());
-    add_descriptions(&mut register_infos);
+    add_descriptions(&mut register_infos, &FIELD_DESCRIPTIONS);
     write_lib(&output_lib, &register_infos)?;
     write_fake(&output_fake, &register_infos)?;
 
     Ok(())
 }
 
-fn add_descriptions(registers: &mut Vec<RegisterInfo>) {
+fn add_descriptions(
+    registers: &mut Vec<RegisterInfo>,
+    descriptions: &BTreeMap<(&str, &str), &str>,
+) {
     for register in registers {
         for field in &mut register.fields {
             if let Some(description) =
-                FIELD_DESCRIPTIONS.get(&(register.name.as_str(), field.name.as_str()))
+                descriptions.get(&(register.name.as_str(), field.name.as_str()))
             {
                 field.description = Some(description.to_string());
             }
