@@ -47,9 +47,7 @@ fn generate_all(registers: &[RegisterEntry], output_file: &File) -> Result<(), R
         match register {
             RegisterEntry::Register(register) => {
                 if register.name == "SCR_EL3" {
-                    let register_info = RegisterInfo::from_json_register(register);
-                    println!("{register_info:#?}");
-                    register_infos.push(register_info);
+                    register_infos.push(RegisterInfo::from_json_register(register));
                 }
             }
             _ => {}
@@ -158,7 +156,6 @@ impl RegisterInfo {
         trace!("{:#?}", register);
         let mut bits = Vec::new();
         for fieldset in &register.fieldsets {
-            println!("fieldset: {:?}", fieldset.name);
             for field_entry in &fieldset.values {
                 bits.extend(RegisterBit::from_field_entry(field_entry));
             }
