@@ -32,6 +32,55 @@ pub fn write_all(mut writer: impl Write + Copy, registers: &[RegisterInfo]) -> i
         register.write_accessor(writer)?;
     }
 
+    writeln!(writer)?;
+    writeln!(writer, "pub mod fake {{")?;
+    writeln!(writer, "    /// A set of fake system registers.")?;
+    writeln!(writer, "    #[derive(Clone, Debug, Eq, PartialEq)]")?;
+    writeln!(writer, "    pub struct SystemRegisters {{")?;
+    for register in registers {
+        writeln!(
+            writer,
+            "        /// Fake value for the {} system register.",
+            register.name
+        )?;
+        let register_type = if register.use_struct() {
+            register.struct_name()
+        } else {
+            format!("u{}", register.width)
+        };
+        writeln!(
+            writer,
+            "        pub {}: {},",
+            register.name.to_lowercase(),
+            register_type
+        )?;
+    }
+    writeln!(writer, "    }}")?;
+    writeln!(writer)?;
+    writeln!(writer, "    impl SystemRegisters {{")?;
+    writeln!(writer, "        const fn new() -> Self {{")?;
+    writeln!(writer, "            Self {{")?;
+    for register in registers {
+        if register.use_struct() {
+            writeln!(
+                writer,
+                "                {}: {}::empty(),",
+                register.name.to_lowercase(),
+                register.struct_name(),
+            )?;
+        } else {
+            writeln!(
+                writer,
+                "                {}: 0,",
+                register.name.to_lowercase(),
+            )?;
+        }
+    }
+    writeln!(writer, "            }}")?;
+    writeln!(writer, "        }}")?;
+    writeln!(writer, "    }}")?;
+    writeln!(writer, "}}")?;
+
     Ok(())
 }
 
