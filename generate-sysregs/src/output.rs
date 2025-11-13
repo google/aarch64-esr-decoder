@@ -14,7 +14,7 @@
 
 //! Logic for writing out a Rust source file with system register types and accessors.
 
-use crate::{RegisterInfo, Safety};
+use crate::{RegisterInfo, Safety, ones};
 use std::io::{self, Write};
 
 pub fn write_lib(mut writer: impl Write + Copy, registers: &[RegisterInfo]) -> io::Result<()> {
@@ -122,6 +122,14 @@ impl RegisterInfo {
             self.struct_name(),
             self.width
         )?;
+        if self.res1 != 0 {
+            writeln!(
+                writer,
+                "        /// RES1 bits in the {} register.",
+                self.name
+            )?;
+            writeln!(writer, "        const RES1 = {:#b};", self.res1)?;
+        }
         for field in &self.fields {
             if field.width == 1 {
                 if let Some(description) = &field.description {
@@ -172,7 +180,7 @@ impl RegisterInfo {
                         "        (self.bits() >> {}) as {} & {:#b}",
                         field.index,
                         field_type,
-                        u64::MAX >> (64 - field.width),
+                        ones(field.width),
                     )?;
                     writeln!(writer, "    }}")?;
                 }
