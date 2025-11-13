@@ -24,8 +24,8 @@ pub fn write_all(mut writer: impl Write + Copy, registers: &[RegisterInfo]) -> i
         writeln!(writer)?;
         register.write_bitflags(writer)?;
     }
+    writeln!(writer)?;
     for register in registers {
-        writeln!(writer)?;
         register.write_accessor(writer)?;
     }
 
