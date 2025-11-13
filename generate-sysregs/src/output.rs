@@ -172,7 +172,7 @@ impl RegisterInfo {
                     )?;
                     writeln!(
                         writer,
-                        "    pub fn {}(self) -> {} {{",
+                        "    pub const fn {}(self) -> {} {{",
                         field.name.to_lowercase(),
                         field_type
                     )?;
