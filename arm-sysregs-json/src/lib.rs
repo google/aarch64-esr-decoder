@@ -203,7 +203,7 @@ pub struct ConstantField {
     pub name: Option<String>,
     pub rangeset: Vec<Range>,
     pub resets: Option<FieldResets>,
-    pub value: Value,
+    pub value: ValueEntry,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -246,6 +246,8 @@ pub enum ValueEntry {
     EquationValue(EquationValue),
     #[serde(rename = "Values.Group")]
     Group(Group),
+    #[serde(rename = "Values.ImplementationDefined")]
+    ImplementationDefined(ImplementationDefinedValue),
     #[serde(rename = "Values.Link")]
     Link(Link),
     #[serde(rename = "Values.NamedValue")]
@@ -295,6 +297,12 @@ pub struct NamedValue {
 pub struct Value {
     pub meaning: Option<String>,
     pub value: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ImplementationDefinedValue {
+    pub constraints: Option<Values>,
+    pub meaning: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
