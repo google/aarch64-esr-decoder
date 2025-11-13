@@ -35,18 +35,26 @@ fn main() -> Result<(), Report> {
         args.registers_json.display()
     );
     let mut output_file = File::create(args.output_file)?;
-    generate_all(&registers, &mut output_file)?;
+    let registers_filter = args
+        .registers
+        .as_ref()
+        .map(|registers| registers.split(',').collect::<Vec<_>>());
+    generate_all(&registers, &mut output_file, registers_filter.as_deref())?;
 
     Ok(())
 }
 
-fn generate_all(registers: &[RegisterEntry], output_file: &File) -> Result<(), Report> {
+fn generate_all(
+    registers: &[RegisterEntry],
+    output_file: &File,
+    registers_filter: Option<&[&str]>,
+) -> Result<(), Report> {
     let mut register_infos = Vec::new();
 
     for register in registers {
         match register {
             RegisterEntry::Register(register) => {
-                if register.name == "SCR_EL3" {
+                if filter_matches(registers_filter, register) {
                     register_infos.push(RegisterInfo::from_json_register(register));
                 }
             }
@@ -57,6 +65,16 @@ fn generate_all(registers: &[RegisterEntry], output_file: &File) -> Result<(), R
     write_all(output_file, &register_infos)?;
 
     Ok(())
+}
+
+fn filter_matches(filter: Option<&[&str]>, register: &Register) -> bool {
+    if let Some(filter) = filter {
+        filter
+            .iter()
+            .any(|filter_entry| register.name == *filter_entry)
+    } else {
+        true
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -182,4 +200,7 @@ struct Args {
     registers_json: PathBuf,
     /// Path to output file.
     output_file: PathBuf,
+    /// List of registers to include
+    #[arg(long)]
+    registers: Option<String>,
 }
