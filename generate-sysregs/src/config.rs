@@ -1,0 +1,56 @@
+// Copyright 2025 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+use crate::Safety;
+use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct Config {
+    pub registers: BTreeMap<String, RegisterConfig>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct RegisterConfig {
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub field_descriptions: BTreeMap<String, String>,
+    /// If this is set it overrides the read access from the JSON input.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub read: Option<AccessType>,
+    /// If this is set it overrides the write access from the JSON input.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub write: Option<AccessType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub write_safety_doc: Option<String>,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum AccessType {
+    Never,
+    Unsafe,
+    Safe,
+}
+
+impl From<AccessType> for Option<Safety> {
+    fn from(value: AccessType) -> Self {
+        match value {
+            AccessType::Never => None,
+            AccessType::Unsafe => Some(Safety::Unsafe),
+            AccessType::Safe => Some(Safety::Safe),
+        }
+    }
+}
