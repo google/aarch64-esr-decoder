@@ -66,21 +66,18 @@ impl RegisterField {
                 None
             }
             FieldEntry::ConditionalField(field) => {
-                trace!(
-                    "  Conditional field: {:?}, {:?}",
-                    field.name, field.rangeset
-                );
+                trace!("  Conditional field: {:?} {:?}", field.name, field.rangeset);
                 Self::from_conditional_field(field, offset)
             }
             FieldEntry::Array(field) => {
                 info!(
-                    "  Array field: {:?}, {:?}, {}, {:?}",
+                    "  Array field: {:?} {:?}, {}, {:?}",
                     field.name, field.rangeset, field.index_variable, field.indexes
                 );
                 Self::from_array_field(field, offset)
             }
             FieldEntry::ConstantField(constant_field) => {
-                info!(
+                trace!(
                     "  Constant field: {:?} {:?}",
                     constant_field.name, constant_field.rangeset
                 );
