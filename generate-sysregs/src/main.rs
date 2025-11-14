@@ -96,6 +96,8 @@ struct RegisterField {
     pub index: u32,
     /// The width of the field in bits.
     pub width: u32,
+    /// Whether the field is writable.
+    pub writable: bool,
     /// Information about the array, if it is an array field.
     pub array_info: Option<ArrayInfo>,
 }
