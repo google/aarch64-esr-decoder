@@ -44,7 +44,10 @@ fn main() -> Result<(), Report> {
     let output_fake = File::create(args.output_directory.join("fake.rs"))?;
     let registers_filter = config.registers.keys().collect::<Vec<_>>();
     let mut register_infos = generate_all(&registers, &registers_filter);
-    add_details(&mut register_infos, &config);
+    for register in &mut register_infos {
+        remove_clashes(register);
+        add_details(register, &config);
+    }
     register_infos.sort_by_cached_key(|register| register.name.clone());
     write_lib(&output_lib, &register_infos)?;
     write_fake(&output_fake, &register_infos)?;
@@ -52,20 +55,28 @@ fn main() -> Result<(), Report> {
     Ok(())
 }
 
-fn add_details(registers: &mut Vec<RegisterInfo>, config: &Config) {
-    for register in registers {
-        if let Some(register_config) = config.registers.get(&register.name) {
-            for field in &mut register.fields {
-                if let Some(description) = register_config.field_descriptions.get(&field.name) {
-                    field.description = Some(description.clone());
-                }
+/// Removes any fields which have the same name or overlapping position as each other.
+fn remove_clashes(register: &mut RegisterInfo) {
+    let fields_copy = register.fields.clone();
+    register.fields.retain(|field| {
+        !fields_copy.iter().any(|other_field| {
+            field != other_field && (field.name == other_field.name || field.overlaps(other_field))
+        })
+    });
+}
+
+fn add_details(register: &mut RegisterInfo, config: &Config) {
+    if let Some(register_config) = config.registers.get(&register.name) {
+        for field in &mut register.fields {
+            if let Some(description) = register_config.field_descriptions.get(&field.name) {
+                field.description = Some(description.clone());
             }
-            if let Some(read) = register_config.read {
-                register.read = read.into();
-            }
-            if let Some(write) = register_config.write {
-                register.write = write.into();
-            }
+        }
+        if let Some(read) = register_config.read {
+            register.read = read.into();
+        }
+        if let Some(write) = register_config.write {
+            register.write = write.into();
         }
     }
 }
@@ -107,6 +118,13 @@ struct RegisterField {
     pub writable: bool,
     /// Information about the array, if it is an array field.
     pub array_info: Option<ArrayInfo>,
+}
+
+impl RegisterField {
+    fn overlaps(&self, other: &Self) -> bool {
+        (self.index..self.index + self.width).contains(&other.index)
+            || (other.index..other.index + other.width).contains(&self.index)
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
