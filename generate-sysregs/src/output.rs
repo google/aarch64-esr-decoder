@@ -56,7 +56,7 @@ pub use paste as _paste;
 
 pub fn write_fake(mut writer: impl Write + Copy, registers: &[RegisterInfo]) -> io::Result<()> {
     writeln!(writer, "/// A set of fake system registers.")?;
-    writeln!(writer, "#[derive(Clone, Debug, Eq, PartialEq)]")?;
+    writeln!(writer, "#[derive(Clone, Debug, Default, Eq, PartialEq)]")?;
     writeln!(writer, "pub struct SystemRegisters {{")?;
     for register in registers {
         writeln!(
