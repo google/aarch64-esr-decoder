@@ -202,14 +202,22 @@ impl RegisterInfo {
                             array_info.index_variable,
                             field_type,
                         )?;
-                        writeln!(
-                            writer,
-                            "        assert!({} >= {} && {} < {});",
-                            array_info.index_variable,
-                            array_info.indices.start,
-                            array_info.index_variable,
-                            array_info.indices.end,
-                        )?;
+                        if array_info.indices.start > 0 {
+                            writeln!(
+                                writer,
+                                "        assert!({} >= {} && {} < {});",
+                                array_info.index_variable,
+                                array_info.indices.start,
+                                array_info.index_variable,
+                                array_info.indices.end,
+                            )?;
+                        } else {
+                            writeln!(
+                                writer,
+                                "        assert!({} < {});",
+                                array_info.index_variable, array_info.indices.end,
+                            )?;
+                        }
                         writeln!(
                             writer,
                             "        (self.bits() >> ({} + ({} - {}) * {})) as {} & {:#b}",
