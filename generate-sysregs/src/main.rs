@@ -45,6 +45,7 @@ fn main() -> Result<(), Report> {
     let registers_filter = config.registers.keys().collect::<Vec<_>>();
     let mut register_infos = generate_all(&registers, &registers_filter);
     add_details(&mut register_infos, &config);
+    register_infos.sort_by_cached_key(|register| register.name.clone());
     write_lib(&output_lib, &register_infos)?;
     write_fake(&output_fake, &register_infos)?;
 
