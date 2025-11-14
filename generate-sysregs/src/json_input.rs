@@ -20,17 +20,10 @@ impl RegisterInfo {
     pub fn from_json_register(register: &Register) -> RegisterInfo {
         trace!("{:#?}", register);
         let mut fields = Vec::new();
-        let mut writable = false;
         let mut res1 = 0;
         for fieldset in &register.fieldsets {
             for field_entry in &fieldset.values {
                 fields.extend(RegisterField::from_field_entry(field_entry, 0));
-                if matches!(
-                    field_entry,
-                    FieldEntry::Field(_) | FieldEntry::ConditionalField(_)
-                ) {
-                    writable = true;
-                }
                 if let FieldEntry::Reserved(field) = field_entry
                     && field.value == "RES1"
                 {
@@ -42,6 +35,7 @@ impl RegisterInfo {
         }
         fields.sort_by_key(|field| field.index);
         fields.dedup();
+        let writable = fields.iter().any(|field| field.writable);
         RegisterInfo {
             name: register.name.clone(),
             // TODO
@@ -126,6 +120,7 @@ impl RegisterField {
                 description: None,
                 index: offset + range.start,
                 width: range.width,
+                writable: true,
                 array_info: None,
             })
         } else {
@@ -143,6 +138,7 @@ impl RegisterField {
                     description: None,
                     index: offset + range.start,
                     width: range.width / array_range.width,
+                    writable: true,
                     array_info: Some(ArrayInfo {
                         indices: array_range.start..array_range.start + array_range.width,
                         index_variable: field.index_variable.clone(),
@@ -169,6 +165,7 @@ impl RegisterField {
                 description: None,
                 index: offset + range.start,
                 width: range.width,
+                writable: false,
                 array_info: None,
             })
         } else {
