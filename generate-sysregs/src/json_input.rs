@@ -46,6 +46,7 @@ impl RegisterInfo {
             res1,
             read: Some(Safety::Safe),
             write: if writable { Some(Safety::Unsafe) } else { None },
+            write_safety_doc: None,
         }
     }
 }

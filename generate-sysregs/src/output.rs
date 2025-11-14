@@ -266,13 +266,30 @@ impl RegisterInfo {
                     Safety::Safe => ", safe",
                     Safety::Unsafe => "",
                 };
-                writeln!(
-                    writer,
-                    "write_sysreg!({}, {}{}, fake::SYSREGS);",
-                    self.variable_name(),
-                    register_type,
-                    safe_write,
-                )?;
+                if let Some(safety_doc) = &self.write_safety_doc {
+                    writeln!(
+                        writer,
+                        "\
+write_sysreg! {{
+    /// # Safety
+    ///
+    /// {}
+    {}, {}{}, fake::SYSREGS
+}}",
+                        safety_doc,
+                        self.variable_name(),
+                        register_type,
+                        safe_write,
+                    )?;
+                } else {
+                    writeln!(
+                        writer,
+                        "write_sysreg!({}, {}{}, fake::SYSREGS);",
+                        self.variable_name(),
+                        register_type,
+                        safe_write,
+                    )?;
+                }
             }
             (Some(read_safety), None) => {
                 let safe_read = match read_safety {
@@ -296,14 +313,32 @@ impl RegisterInfo {
                     Safety::Safe => ", safe_write",
                     Safety::Unsafe => "",
                 };
-                writeln!(
-                    writer,
-                    "read_write_sysreg!({}, {}{}{}, fake::SYSREGS);",
-                    self.variable_name(),
-                    register_type,
-                    safe_read,
-                    safe_write,
-                )?;
+                if let Some(safety_doc) = &self.write_safety_doc {
+                    writeln!(
+                        writer,
+                        "\
+read_write_sysreg! {{
+    /// # Safety
+    ///
+    /// {}
+    {}, {}{}{}, fake::SYSREGS
+}}",
+                        safety_doc,
+                        self.variable_name(),
+                        register_type,
+                        safe_read,
+                        safe_write,
+                    )?;
+                } else {
+                    writeln!(
+                        writer,
+                        "read_write_sysreg!({}, {}{}{}, fake::SYSREGS);",
+                        self.variable_name(),
+                        register_type,
+                        safe_read,
+                        safe_write,
+                    )?;
+                }
             }
         }
         Ok(())
