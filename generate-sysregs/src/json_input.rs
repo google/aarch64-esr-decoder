@@ -13,7 +13,9 @@
 // limitations under the License.
 
 use crate::{ArrayInfo, RegisterField, RegisterInfo, Safety, ones};
-use arm_sysregs_json::{ArrayField, ConditionalField, ConstantField, Field, FieldEntry, Register};
+use arm_sysregs_json::{
+    ArrayField, ConditionalField, ConstantField, DynamicField, Field, FieldEntry, Register,
+};
 use log::{info, trace};
 
 impl RegisterInfo {
@@ -84,7 +86,10 @@ impl RegisterField {
                 );
                 Self::from_constant_field(constant_field, offset)
             }
-            FieldEntry::Dynamic(_dynamic_field) => todo!(),
+            FieldEntry::Dynamic(field) => {
+                trace!("  Dynamic field {:?} {:?}", field.name, field.rangeset);
+                Self::from_dynamic_field(field, offset)
+            }
             FieldEntry::Vector(_vector_field) => todo!(),
         }
     }
@@ -165,6 +170,23 @@ impl RegisterField {
                 index: offset + range.start,
                 width: range.width,
                 writable: false,
+                array_info: None,
+            })
+        } else {
+            info!("Skipping field with multiple ranges {:?}", field.rangeset);
+            None
+        }
+    }
+
+    fn from_dynamic_field(field: &DynamicField, offset: u32) -> Option<Self> {
+        if let [range] = field.rangeset.as_slice() {
+            let name = field.name.clone().unwrap();
+            Some(RegisterField {
+                name,
+                description: None,
+                index: offset + range.start,
+                width: range.width,
+                writable: true,
                 array_info: None,
             })
         } else {
