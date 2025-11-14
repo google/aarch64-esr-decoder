@@ -14,7 +14,7 @@
 
 //! Logic for writing out a Rust source file with system register types and accessors.
 
-use crate::{RegisterInfo, Safety, ones};
+use crate::{RegisterField, RegisterInfo, Safety, ones};
 use std::io::{self, Write};
 
 pub fn write_lib(mut writer: impl Write + Copy, registers: &[RegisterInfo]) -> io::Result<()> {
@@ -71,7 +71,7 @@ pub fn write_fake(mut writer: impl Write + Copy, registers: &[RegisterInfo]) -> 
         writeln!(
             writer,
             "    pub {}: {},",
-            register.name.to_lowercase(),
+            register.variable_name(),
             register_type
         )?;
     }
@@ -85,11 +85,11 @@ pub fn write_fake(mut writer: impl Write + Copy, registers: &[RegisterInfo]) -> 
             writeln!(
                 writer,
                 "            {}: {}::empty(),",
-                register.name.to_lowercase(),
+                register.variable_name(),
                 register.struct_name(),
             )?;
         } else {
-            writeln!(writer, "            {}: 0,", register.name.to_lowercase(),)?;
+            writeln!(writer, "            {}: 0,", register.variable_name())?;
         }
     }
     writeln!(writer, "        }}")?;
@@ -144,8 +144,7 @@ impl RegisterInfo {
                             writer,
                             "        const {} = 1 << {};",
                             field
-                                .name
-                                .to_uppercase()
+                                .constant_name()
                                 .replace(&placeholder, &format!("{}", i)),
                             field.index,
                         )?;
@@ -159,7 +158,7 @@ impl RegisterInfo {
                     writeln!(
                         writer,
                         "        const {} = 1 << {};",
-                        field.name.to_uppercase(),
+                        field.constant_name(),
                         field.index,
                     )?;
                 }
@@ -198,10 +197,7 @@ impl RegisterInfo {
                         writeln!(
                             writer,
                             "    pub const fn {}(self, {}: u32) -> {} {{",
-                            field
-                                .name
-                                .to_lowercase()
-                                .replace(&array_info.placeholder(), ""),
+                            field.function_name().replace(&array_info.placeholder(), ""),
                             array_info.index_variable,
                             field_type,
                         )?;
@@ -237,7 +233,7 @@ impl RegisterInfo {
                         writeln!(
                             writer,
                             "    pub const fn {}(self) -> {} {{",
-                            field.name.to_lowercase(),
+                            field.function_name(),
                             field_type
                         )?;
                         writeln!(
@@ -272,7 +268,7 @@ impl RegisterInfo {
                 writeln!(
                     writer,
                     "write_sysreg!({}, {}{}, fake::SYSREGS);",
-                    self.name.to_lowercase(),
+                    self.variable_name(),
                     register_type,
                     safe_write,
                 )?;
@@ -285,7 +281,7 @@ impl RegisterInfo {
                 writeln!(
                     writer,
                     "read_sysreg!({}, {}{}, fake::SYSREGS);",
-                    self.name.to_lowercase(),
+                    self.variable_name(),
                     register_type,
                     safe_read,
                 )?;
@@ -302,7 +298,7 @@ impl RegisterInfo {
                 writeln!(
                     writer,
                     "read_write_sysreg!({}, {}{}{}, fake::SYSREGS);",
-                    self.name.to_lowercase(),
+                    self.variable_name(),
                     register_type,
                     safe_read,
                     safe_write,
@@ -311,12 +307,43 @@ impl RegisterInfo {
         }
         Ok(())
     }
+
+    /// Returns the name of the field formatted to be a valid Rust variable name.
+    fn variable_name(&self) -> String {
+        lowercase_name(&self.name)
+    }
+}
+
+impl RegisterField {
+    /// Returns the name of the field formatted to be a valid Rust constant name.
+    fn constant_name(&self) -> String {
+        uppercase_name(&self.name)
+    }
+
+    /// Returns the name of the field formatted to be a valid Rust function name.
+    fn function_name(&self) -> String {
+        lowercase_name(&self.name)
+    }
 }
 
 fn camel_case(name: &str) -> String {
     name.split('_')
         .flat_map(|part| [part[0..1].to_uppercase(), part[1..].to_lowercase()])
         .collect()
+}
+
+fn lowercase_name(name: &str) -> String {
+    name.replace(':', "_")
+        .replace('[', "_")
+        .replace(']', "")
+        .to_lowercase()
+}
+
+fn uppercase_name(name: &str) -> String {
+    name.replace(':', "_")
+        .replace('[', "_")
+        .replace(']', "")
+        .to_uppercase()
 }
 
 /// Returns the smallest unsigned type that can hold at least the given number of bits
