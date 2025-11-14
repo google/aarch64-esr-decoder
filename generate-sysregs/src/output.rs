@@ -32,6 +32,7 @@ mod macros;
 mod manual;
 
 use bitflags::bitflags;
+pub use manual::*;
 #[doc(hidden)]
 pub use paste as _paste;
 "
