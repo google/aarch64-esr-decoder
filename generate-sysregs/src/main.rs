@@ -23,6 +23,7 @@ use crate::{
 use arm_sysregs_json::{Register, RegisterEntry};
 use clap::Parser;
 use eyre::Report;
+use log::info;
 use std::{
     fs::{File, read_to_string},
     ops::Range,
@@ -47,6 +48,7 @@ fn main() -> Result<(), Report> {
     for register in &mut register_infos {
         remove_clashes(register);
         add_details(register, &config);
+        remove_over_64bit(register);
     }
     register_infos.sort_by_cached_key(|register| register.name.clone());
     write_lib(&output_lib, &register_infos)?;
@@ -63,6 +65,20 @@ fn remove_clashes(register: &mut RegisterInfo) {
             field != other_field && (field.name == other_field.name || field.overlaps(other_field))
         })
     });
+}
+
+/// Remove any fields outside of the lower 64 bits, as we don't yet support 128-bit registers.
+fn remove_over_64bit(register: &mut RegisterInfo) {
+    if register.width > 64 {
+        info!(
+            "Trimming {}-bit register {} to 64 bit.",
+            register.width, register.name
+        );
+        register.width = 64;
+    }
+    register
+        .fields
+        .retain(|field| field.index + field.width <= 64)
 }
 
 fn add_details(register: &mut RegisterInfo, config: &Config) {

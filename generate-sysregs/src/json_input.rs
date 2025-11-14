@@ -37,11 +37,16 @@ impl RegisterInfo {
         }
         fields.sort_by_key(|field| field.index);
         fields.dedup();
+        // TODO: Find a better way to detect register width, including 32-bit registers.
+        let width = if fields.iter().any(|field| field.index + field.width > 64) {
+            128
+        } else {
+            64
+        };
         let writable = fields.iter().any(|field| field.writable);
         RegisterInfo {
             name: register.name.clone(),
-            // TODO
-            width: 64,
+            width,
             fields,
             res1,
             read: Some(Safety::Safe),
