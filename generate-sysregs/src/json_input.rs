@@ -43,7 +43,6 @@ impl RegisterInfo {
             fields,
             res1,
             read: Some(Safety::Safe),
-            // TODO
             write: if writable { Some(Safety::Unsafe) } else { None },
         }
     }

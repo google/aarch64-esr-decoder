@@ -44,20 +44,26 @@ fn main() -> Result<(), Report> {
     let output_fake = File::create(args.output_directory.join("fake.rs"))?;
     let registers_filter = config.registers.keys().collect::<Vec<_>>();
     let mut register_infos = generate_all(&registers, &registers_filter);
-    add_descriptions(&mut register_infos, &config);
+    add_details(&mut register_infos, &config);
     write_lib(&output_lib, &register_infos)?;
     write_fake(&output_fake, &register_infos)?;
 
     Ok(())
 }
 
-fn add_descriptions(registers: &mut Vec<RegisterInfo>, config: &Config) {
+fn add_details(registers: &mut Vec<RegisterInfo>, config: &Config) {
     for register in registers {
         if let Some(register_config) = config.registers.get(&register.name) {
             for field in &mut register.fields {
                 if let Some(description) = register_config.field_descriptions.get(&field.name) {
                     field.description = Some(description.clone());
                 }
+            }
+            if let Some(read) = register_config.read {
+                register.read = read.into();
+            }
+            if let Some(write) = register_config.write {
+                register.write = write.into();
             }
         }
     }

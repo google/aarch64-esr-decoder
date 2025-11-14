@@ -1,4 +1,9 @@
 [registers.ICC_SRE_EL2]
+[registers.ID_AA64MMFR1_EL1]
+[registers.ID_AA64MMFR2_EL1]
+
+[registers.CNTFRQ_EL0]
+write = "safe"
 
 [registers.SCR_EL3.field_descriptions]
 NS = "Non-secure."
