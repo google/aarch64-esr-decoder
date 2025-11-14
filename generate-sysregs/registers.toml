@@ -1,4 +1,6 @@
-[registers.CLIDR_EL1]
+[registers.CLIDR_EL1.field_descriptions]
+LoC = "Level of Coherence for the cache hierarchy."
+
 [registers.CPTR_EL3]
 [registers.CSSELR_EL1]
 [registers.CTR_EL0]
@@ -13,6 +15,8 @@
 [registers.ICC_SRE_EL1]
 [registers.ICC_SRE_EL2]
 [registers.ICC_SRE_EL3]
+write_safety_doc = "The SRE bit of `icc_sre_el3` must not be changed from 1 to 0, as this can result in unpredictable behaviour."
+
 [registers.ID_AA64DFR0_EL1]
 [registers.ID_AA64DFR1_EL1]
 [registers.ID_AA64MMFR1_EL1]
@@ -20,21 +24,14 @@
 [registers.ID_AA64MMFR3_EL1]
 [registers.ID_AA64PFR0_EL1]
 [registers.ID_AA64PFR1_EL1]
+[registers.MAIR_EL3]
+write_safety_doc = "The caller must ensure that `value` is a correct and safe configuration value for the EL3 memory attribute indirection register."
+
 [registers.MDCR_EL2]
 [registers.MDCR_EL3]
 [registers.MPAM3_EL3]
 [registers.MPIDR_EL1]
 [registers.PMCR_EL0]
-[registers.SCR_EL3]
-[registers.SCTLR_EL1]
-[registers.SCTLR_EL2]
-[registers.SCTLR_EL3]
-[registers.SPSR_EL1]
-[registers.SPSR_EL2]
-
-[registers.CNTFRQ_EL0]
-write = "safe"
-
 [registers.SCR_EL3.field_descriptions]
 NS = "Non-secure."
 IRQ = "Take physical IRQs at EL3."
@@ -91,5 +88,18 @@ HDBSSEn = "Enable HDBSSBR_EL2 and HDBSSPROD_EL2 registers at EL2."
 HACDBSEn = "Enable HACDBSBR_EL2 and HACDBSCONS_EL2 registers at EL2."
 NSE = "Non-secure realm world bit."
 
-[registers.CLIDR_EL1.field_descriptions]
-LoC = "Level of Coherence for the cache hierarchy."
+[registers.SCTLR_EL1]
+[registers.SCTLR_EL2]
+[registers.SCTLR_EL3]
+write_safety_doc = "The caller must ensure that `value` is a correct and safe configuration value for the EL3 system control register."
+
+[registers.SPSR_EL1]
+[registers.SPSR_EL2]
+[registers.TCR_EL3]
+write_safety_doc = "The caller must ensure that `value` is a correct and safe configuration value for the EL3 translation control register."
+
+[registers.TTBR0_EL3]
+write_safety_doc = "The caller must ensure that `value` is a valid base address for the EL3 translation table: it must be page-aligned, and must point to a stage 1 translation table in the EL3 translation regime."
+
+[registers.CNTFRQ_EL0]
+write = "safe"

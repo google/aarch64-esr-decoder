@@ -33,6 +33,8 @@ pub struct RegisterConfig {
     /// If this is set it overrides the write access from the JSON input.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub write: Option<AccessType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub write_safety_doc: Option<String>,
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]

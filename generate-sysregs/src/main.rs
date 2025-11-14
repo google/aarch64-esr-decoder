@@ -78,6 +78,7 @@ fn add_details(register: &mut RegisterInfo, config: &Config) {
         if let Some(write) = register_config.write {
             register.write = write.into();
         }
+        register.write_safety_doc = register_config.write_safety_doc.clone();
     }
 }
 
@@ -150,6 +151,7 @@ struct RegisterInfo {
     pub res1: u64,
     pub read: Option<Safety>,
     pub write: Option<Safety>,
+    pub write_safety_doc: Option<String>,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
