@@ -1,22 +1,54 @@
+[registers.ACTLR_EL1]
+write = "unsafe"
+[registers.ACTLR_EL2]
+write = "unsafe"
+[registers.AFSR0_EL1]
+write = "unsafe"
+[registers.AFSR0_EL2]
+write = "unsafe"
+[registers.AFSR1_EL1]
+write = "unsafe"
+[registers.AFSR1_EL2]
+write = "unsafe"
+[registers.AMAIR_EL1]
+write = "unsafe"
+[registers.AMAIR_EL2]
+write = "unsafe"
+[registers.CCSIDR_EL1]
 [registers.CLIDR_EL1.field_descriptions]
 LoC = "Level of Coherence for the cache hierarchy."
 
+[registers.CNTHCTL_EL2]
+[registers.CNTVOFF_EL2]
+[registers.CONTEXTIDR_EL1]
+[registers.CONTEXTIDR_EL2]
+[registers.CPACR_EL1]
+[registers.CPTR_EL2]
 [registers.CPTR_EL3]
 [registers.CSSELR_EL1]
 [registers.CTR_EL0]
 [registers.DIT]
+[registers.ELR_EL1]
+[registers.ELR_EL2]
 [registers.ESR_EL1]
 [registers.ESR_EL2]
 [registers.ESR_EL3]
+[registers.FAR_EL1]
+[registers.FAR_EL2]
 [registers.GCSCR_EL1]
 [registers.GCSCR_EL2]
+[registers.HACR_EL2]
 [registers.HCR_EL2]
 [registers.HCRX_EL2]
+[registers.HPFAR_EL2]
+[registers.HSTR_EL2]
 [registers.ICC_SRE_EL1]
 [registers.ICC_SRE_EL2]
 [registers.ICC_SRE_EL3]
 write_safety_doc = "The SRE bit of `icc_sre_el3` must not be changed from 1 to 0, as this can result in unpredictable behaviour."
 
+[registers.ICH_HCR_EL2]
+[registers.ICH_VMCR_EL2]
 [registers.ID_AA64DFR0_EL1]
 [registers.ID_AA64DFR1_EL1]
 [registers.ID_AA64MMFR1_EL1]
@@ -24,13 +56,23 @@ write_safety_doc = "The SRE bit of `icc_sre_el3` must not be changed from 1 to 0
 [registers.ID_AA64MMFR3_EL1]
 [registers.ID_AA64PFR0_EL1]
 [registers.ID_AA64PFR1_EL1]
+[registers.ISR_EL1]
+[registers.MAIR_EL1]
+[registers.MAIR_EL2]
 [registers.MAIR_EL3]
 write_safety_doc = "The caller must ensure that `value` is a correct and safe configuration value for the EL3 memory attribute indirection register."
 
+[registers.MDCCINT_EL1]
 [registers.MDCR_EL2]
 [registers.MDCR_EL3]
+[registers.MDSCR_EL1]
+[registers.MIDR_EL1]
+[registers.MPAM2_EL2]
 [registers.MPAM3_EL3]
+[registers.MPAMHCR_EL2]
+[registers.MPAMIDR_EL1]
 [registers.MPIDR_EL1]
+[registers.PAR_EL1]
 [registers.PMCR_EL0]
 [registers.SCR_EL3.field_descriptions]
 NS = "Non-secure."
@@ -93,13 +135,34 @@ NSE = "Non-secure realm world bit."
 [registers.SCTLR_EL3]
 write_safety_doc = "The caller must ensure that `value` is a correct and safe configuration value for the EL3 system control register."
 
+[registers.SP_EL1]
+[registers.SP_EL2]
 [registers.SPSR_EL1]
 [registers.SPSR_EL2]
+[registers.TCR_EL1]
+[registers.TCR_EL2]
 [registers.TCR_EL3]
 write_safety_doc = "The caller must ensure that `value` is a correct and safe configuration value for the EL3 translation control register."
 
+[registers.TPIDR_EL0]
+[registers.TPIDR_EL1]
+[registers.TPIDR_EL2]
+[registers.TPIDRRO_EL0]
+[registers.TTBR0_EL1]
+[registers.TTBR0_EL2]
 [registers.TTBR0_EL3]
 write_safety_doc = "The caller must ensure that `value` is a valid base address for the EL3 translation table: it must be page-aligned, and must point to a stage 1 translation table in the EL3 translation regime."
+
+[registers.TTBR1_EL1]
+[registers.TTBR1_EL2]
+[registers.VBAR_EL1]
+[registers.VBAR_EL2]
+[registers.VDISR_EL2]
+[registers.VMPIDR_EL2]
+[registers.VPIDR_EL2]
+[registers.VSESR_EL2]
+[registers.VTCR_EL2]
+[registers.VTTBR_EL2]
 
 [registers.CNTFRQ_EL0]
 write = "safe"
