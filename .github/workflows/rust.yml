@@ -14,7 +14,7 @@ jobs:
       checks: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Build
         run: cargo build --all
       - name: Run tests
@@ -28,7 +28,7 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Format Rust code
         run: cargo fmt --all -- --check
 
@@ -37,7 +37,7 @@ jobs:
     env:
       RUSTC_BOOTSTRAP: 1
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@v2
         with:
