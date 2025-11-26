@@ -75,7 +75,101 @@ pub enum ExecutionState {
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct Accessor {}
+#[serde(tag = "_type")]
+pub enum Accessor {
+    #[serde(rename = "Accessors.SystemAccessor")]
+    SystemAccessor(SystemAccessor),
+    #[serde(rename = "Accessors.SystemAccessorArray")]
+    SystemAccessorArray(SystemAccessorArray),
+    #[serde(rename = "Accessors.BlockAccess")]
+    BlockAccess(BlockAccess),
+    #[serde(rename = "Accessors.BlockAccessArray")]
+    BlockAccessArray(BlockAccessArray),
+    #[serde(rename = "Accessors.ExternalDebug")]
+    ExternalDebug(ExternalDebug),
+    #[serde(rename = "Accessors.MemoryMapped")]
+    MemoryMapped(MemoryMapped),
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct SystemAccessor {
+    pub access: Option<SystemAccess>,
+    pub condition: Condition,
+    pub encoding: Vec<Encoding>,
+    pub name: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct SystemAccessorArray {
+    pub access: Option<SystemAccess>,
+    pub condition: Condition,
+    pub encoding: Vec<Encoding>,
+    pub index_variable: String,
+    pub indexes: Vec<Range>,
+    pub name: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct BlockAccess {
+    pub access: MemoryAccess,
+    pub condition: Condition,
+    pub offset: Vec<Offset>,
+    pub references: References,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct BlockAccessArray {
+    pub access: MemoryAccess,
+    pub condition: Condition,
+    pub index_variable: String,
+    pub indexes: Vec<Range>,
+    pub offset: Vec<Offset>,
+    pub references: References,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ExternalDebug {
+    pub access: MemoryAccess,
+    pub component: String,
+    pub condition: Condition,
+    pub instance: Option<String>,
+    pub offset: Offset,
+    pub power_domain: Option<String>,
+    pub range: Option<Range>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct MemoryMapped {
+    pub access: MemoryAccess,
+    pub component: String,
+    pub condition: Condition,
+    pub frame: Option<String>,
+    pub instance: Option<String>,
+    pub offset: Offset,
+    pub power_domain: Option<String>,
+    pub range: Option<Range>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct MemoryAccess {}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct Offset {}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct SystemAccess {
+    pub access: Vec<Access>,
+    pub condition: Condition,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct Access {}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct Encoding {
+    pub asmvalue: Option<String>,
+    pub encodings: BTreeMap<String, Value>,
+}
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Condition {}
