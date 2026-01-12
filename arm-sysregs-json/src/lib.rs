@@ -31,7 +31,7 @@ pub struct Register {
     pub meta: Option<Meta>,
     pub access_text: Option<String>,
     pub accessors: Vec<Accessor>,
-    pub condition: Condition,
+    pub condition: Expression,
     pub configuration: Option<String>,
     pub fieldsets: Vec<Fieldset>,
     pub groups: Option<()>,
@@ -94,7 +94,7 @@ pub enum Accessor {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct SystemAccessor {
     pub access: Option<SystemAccess>,
-    pub condition: Condition,
+    pub condition: Expression,
     pub encoding: Vec<Encoding>,
     pub name: String,
 }
@@ -102,7 +102,7 @@ pub struct SystemAccessor {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct SystemAccessorArray {
     pub access: Option<SystemAccess>,
-    pub condition: Condition,
+    pub condition: Expression,
     pub encoding: Vec<Encoding>,
     pub index_variable: String,
     pub indexes: Vec<Range>,
@@ -112,18 +112,18 @@ pub struct SystemAccessorArray {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct BlockAccess {
     pub access: MemoryAccess,
-    pub condition: Condition,
-    pub offset: Vec<Offset>,
+    pub condition: Expression,
+    pub offset: Vec<Expression>,
     pub references: References,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct BlockAccessArray {
     pub access: MemoryAccess,
-    pub condition: Condition,
+    pub condition: Expression,
     pub index_variable: String,
     pub indexes: Vec<Range>,
-    pub offset: Vec<Offset>,
+    pub offset: Vec<Expression>,
     pub references: References,
 }
 
@@ -131,9 +131,9 @@ pub struct BlockAccessArray {
 pub struct ExternalDebug {
     pub access: MemoryAccess,
     pub component: String,
-    pub condition: Condition,
+    pub condition: Expression,
     pub instance: Option<String>,
-    pub offset: Offset,
+    pub offset: Expression,
     pub power_domain: Option<String>,
     pub range: Option<Range>,
 }
@@ -142,24 +142,23 @@ pub struct ExternalDebug {
 pub struct MemoryMapped {
     pub access: MemoryAccess,
     pub component: String,
-    pub condition: Condition,
+    pub condition: Expression,
     pub frame: Option<String>,
     pub instance: Option<String>,
-    pub offset: Offset,
+    pub offset: Expression,
     pub power_domain: Option<String>,
     pub range: Option<Range>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct MemoryAccess {}
-
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct Offset {}
+pub struct MemoryAccess {
+    pub condition: Expression,
+}
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct SystemAccess {
     pub access: Vec<Access>,
-    pub condition: Condition,
+    pub condition: Expression,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -171,12 +170,124 @@ pub struct Encoding {
     pub encodings: BTreeMap<String, Value>,
 }
 
+/// An expression in an AST.
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct Condition {}
+#[serde(tag = "_type")]
+pub enum Expression {
+    #[serde(rename = "AST.Assignment")]
+    Assignment(AstAssignment),
+    #[serde(rename = "AST.BinaryOp")]
+    BinaryOp(AstBinaryOp),
+    #[serde(rename = "AST.Bool")]
+    Bool(AstBool),
+    #[serde(rename = "AST.Concat")]
+    Concat(AstConcat),
+    #[serde(rename = "AST.DotAtom")]
+    DotAtom(AstDotAtom),
+    #[serde(rename = "Types.Field")]
+    Field(TypesField),
+    #[serde(rename = "AST.Function")]
+    Function(AstFunction),
+    #[serde(rename = "AST.Identifier")]
+    Identifier(AstIdentifier),
+    #[serde(rename = "AST.Integer")]
+    Integer(AstInteger),
+    #[serde(rename = "Types.String")]
+    String(TypesString),
+    #[serde(rename = "AST.Set")]
+    Set(AstSet),
+    #[serde(rename = "AST.SquareOp")]
+    SquareOp(AstSquareOp),
+    #[serde(rename = "AST.UnaryOp")]
+    UnaryOp(AstUnaryOp),
+    #[serde(rename = "Values.Value")]
+    Value(Value),
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct AstAssignment {
+    pub val: Box<Expression>,
+    pub var: Box<Expression>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct AstBinaryOp {
+    pub op: String,
+    pub left: Box<Expression>,
+    pub right: Box<Expression>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct AstBool {
+    pub value: bool,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct AstConcat {
+    pub values: Vec<Expression>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct AstDotAtom {
+    pub values: Vec<Expression>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct AstFunction {
+    pub arguments: Vec<Expression>,
+    pub name: String,
+    pub parameters: Vec<Expression>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct AstIdentifier {
+    pub value: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct AstInteger {
+    pub value: i64,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct AstSet {
+    pub values: Vec<Expression>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct AstSquareOp {
+    pub arguments: Vec<Expression>,
+    pub var: Box<Expression>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct AstUnaryOp {
+    pub expr: Box<Expression>,
+    pub op: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct TypesField {
+    pub value: FieldValue,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct FieldValue {
+    pub field: String,
+    pub instance: Option<()>,
+    pub name: String,
+    pub slices: Option<()>,
+    pub state: ExecutionState,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct TypesString {
+    pub value: String,
+}
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Fieldset {
-    pub condition: Condition,
+    pub condition: Expression,
     pub description: Description,
     pub display: Option<String>,
     pub name: Option<String>,
@@ -265,12 +376,9 @@ pub struct VectorField {
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ConditionValue {
-    pub condition: Condition,
-    pub value: AstValue,
+    pub condition: Expression,
+    pub value: Expression,
 }
-
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct AstValue {}
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ConditionalField {
@@ -286,7 +394,7 @@ pub struct ConditionalField {
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct FieldCondition {
-    pub condition: Condition,
+    pub condition: Expression,
     pub field: FieldEntry,
 }
 
@@ -354,7 +462,7 @@ pub enum ValueEntry {
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ConditionalValue {
-    pub condition: Condition,
+    pub condition: Expression,
     pub meaning: Option<String>,
     pub values: Values,
 }
@@ -412,7 +520,7 @@ pub struct RegisterArray {
     pub meta: Option<Meta>,
     pub access_text: Option<String>,
     pub accessors: Vec<Accessor>,
-    pub condition: Condition,
+    pub condition: Expression,
     pub configuration: Option<String>,
     pub fieldsets: Vec<Fieldset>,
     pub groups: Option<()>,
@@ -441,7 +549,7 @@ pub struct InstanceSet {
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Instance {
-    pub condition: Condition,
+    pub condition: Expression,
     pub instance: String,
 }
 
@@ -451,7 +559,7 @@ pub struct RegisterBlock {
     pub meta: Meta,
     pub accessors: Vec<Accessor>,
     pub blocks: Vec<RegisterEntry>,
-    pub condition: Condition,
+    pub condition: Expression,
     pub default_access: ReadWriteAccess,
     pub mapset: Vec<()>,
     pub name: String,
