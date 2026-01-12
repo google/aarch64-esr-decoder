@@ -1,6 +1,6 @@
 [package]
 name = "arm-sysregs-json"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Andrew Walbran <qwandor@google.com>"]
 edition = "2024"
 license = "Apache-2.0"
