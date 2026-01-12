@@ -375,11 +375,8 @@ pub struct VectorField {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ConditionValue {
     pub condition: Expression,
-    pub value: AstValue,
+    pub value: Expression,
 }
-
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct AstValue {}
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ConditionalField {
