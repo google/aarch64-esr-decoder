@@ -151,7 +151,9 @@ pub struct MemoryMapped {
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct MemoryAccess {}
+pub struct MemoryAccess {
+    pub condition: Expression,
+}
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct SystemAccess {
