@@ -113,7 +113,7 @@ pub struct SystemAccessorArray {
 pub struct BlockAccess {
     pub access: MemoryAccess,
     pub condition: Expression,
-    pub offset: Vec<Offset>,
+    pub offset: Vec<Expression>,
     pub references: References,
 }
 
@@ -123,7 +123,7 @@ pub struct BlockAccessArray {
     pub condition: Expression,
     pub index_variable: String,
     pub indexes: Vec<Range>,
-    pub offset: Vec<Offset>,
+    pub offset: Vec<Expression>,
     pub references: References,
 }
 
@@ -133,7 +133,7 @@ pub struct ExternalDebug {
     pub component: String,
     pub condition: Expression,
     pub instance: Option<String>,
-    pub offset: Offset,
+    pub offset: Expression,
     pub power_domain: Option<String>,
     pub range: Option<Range>,
 }
@@ -145,16 +145,13 @@ pub struct MemoryMapped {
     pub condition: Expression,
     pub frame: Option<String>,
     pub instance: Option<String>,
-    pub offset: Offset,
+    pub offset: Expression,
     pub power_domain: Option<String>,
     pub range: Option<Range>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct MemoryAccess {}
-
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct Offset {}
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct SystemAccess {
