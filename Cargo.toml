@@ -16,7 +16,7 @@ readme = "README.md"
 
 [dependencies]
 bit_field = "0.10.3"
-thiserror = "2.0.17"
+thiserror = "2.0.18"
 
 [package.metadata.deb]
 section = "devel"
