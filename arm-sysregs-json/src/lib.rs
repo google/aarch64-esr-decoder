@@ -89,6 +89,10 @@ pub enum Accessor {
     ExternalDebug(ExternalDebug),
     #[serde(rename = "Accessors.MemoryMapped")]
     MemoryMapped(MemoryMapped),
+    #[serde(rename = "Accessors.ImplementationDefinedOffsetAccessor")]
+    ImplementationDefinedOffsetAccessor(ImplementationDefinedOffsetAccessor),
+    #[serde(rename = "Accessors.ImplementationDefinedOffsetAccessorArray")]
+    ImplementationDefinedOffsetAccessorArray(ImplementationDefinedOffsetAccessorArray),
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -148,6 +152,22 @@ pub struct MemoryMapped {
     pub offset: Expression,
     pub power_domain: Option<String>,
     pub range: Option<Range>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ImplementationDefinedOffsetAccessor {
+    pub access: MemoryAccess,
+    pub condition: Expression,
+    pub offset: Vec<Expression>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ImplementationDefinedOffsetAccessorArray {
+    pub access: MemoryAccess,
+    pub condition: Expression,
+    pub index_variable: String,
+    pub indexes: Vec<Range>,
+    pub offset: Vec<Expression>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
