@@ -187,7 +187,7 @@ pub struct Access {}
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Encoding {
     pub asmvalue: Option<String>,
-    pub encodings: BTreeMap<String, Value>,
+    pub encodings: BTreeMap<String, ValueEntry>,
 }
 
 /// An expression in an AST.
