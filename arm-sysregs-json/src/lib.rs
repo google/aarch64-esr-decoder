@@ -50,13 +50,13 @@ pub struct Meta {
     pub version: Version,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct License {
     pub copyright: String,
     pub info: String,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Version {
     pub architecture: String,
     pub build: String,
@@ -184,7 +184,7 @@ pub struct SystemAccess {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Access {}
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Encoding {
     pub asmvalue: Option<String>,
     pub encodings: BTreeMap<String, ValueEntry>,
@@ -237,39 +237,39 @@ pub struct AstBinaryOp {
     pub right: Box<Expression>,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct AstBool {
     pub value: bool,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct AstConcat {
     pub values: Vec<Expression>,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct AstDotAtom {
     pub values: Vec<Expression>,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct AstFunction {
     pub arguments: Vec<Expression>,
     pub name: String,
     pub parameters: Vec<Expression>,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct AstIdentifier {
     pub value: String,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct AstInteger {
     pub value: i64,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct AstSet {
     pub values: Vec<Expression>,
 }
@@ -300,7 +300,7 @@ pub struct FieldValue {
     pub state: ExecutionState,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct TypesString {
     pub value: String,
 }
@@ -336,7 +336,7 @@ pub enum FieldEntry {
     Dynamic(DynamicField),
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Field {
     pub description: Description,
     pub name: Option<String>,
@@ -346,14 +346,14 @@ pub struct Field {
     pub volatile: Option<bool>,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ReservedField {
     pub description: Description,
     pub rangeset: Vec<Range>,
     pub value: String,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ImplementationDefinedField {
     pub constraints: Option<Vec<()>>,
     pub description: Description,
@@ -364,7 +364,7 @@ pub struct ImplementationDefinedField {
     pub volatile: Option<bool>,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ArrayField {
     pub access: Option<()>,
     pub description: Description,
@@ -378,7 +378,7 @@ pub struct ArrayField {
     pub volatile: Option<bool>,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct VectorField {
     pub access: Option<()>,
     pub description: Description,
@@ -400,7 +400,7 @@ pub struct ConditionValue {
     pub value: Expression,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ConditionalField {
     pub description: Description,
     pub display: Option<String>,
@@ -428,7 +428,7 @@ pub struct ConstantField {
     pub value: ValueEntry,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct DynamicField {
     pub description: Description,
     pub display: Option<String>,
@@ -439,13 +439,13 @@ pub struct DynamicField {
     pub volatile: Option<bool>,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Description {
     pub after: Option<String>,
     pub before: Option<String>,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Range {
     pub start: u32,
     pub width: u32,
@@ -454,7 +454,7 @@ pub struct Range {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct FieldResets {}
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Values {
     pub values: Vec<ValueEntry>,
 }
@@ -487,47 +487,47 @@ pub struct ConditionalValue {
     pub values: Values,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct EquationValue {
     pub meaning: Option<String>,
     pub slice: Vec<Range>,
     pub value: String,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Group {
     pub meaning: Option<String>,
     pub value: String,
     pub values: Values,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Link {
     pub links: BTreeMap<String, String>,
     pub meaning: Option<String>,
     pub value: String,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct NamedValue {
     pub meaning: Option<String>,
     pub name: String,
     pub value: String,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Value {
     pub meaning: Option<String>,
     pub value: String,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ImplementationDefinedValue {
     pub constraints: Option<Values>,
     pub meaning: Option<String>,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ValueRange {
     pub end: Value,
     pub meaning: Option<String>,
@@ -562,7 +562,7 @@ pub enum Instances {
     Bool(bool),
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct InstanceSet {
     pub values: Vec<Instance>,
 }
@@ -589,7 +589,7 @@ pub struct RegisterBlock {
     pub title: Option<String>,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ReadWriteAccess {
     pub read: String,
     pub write: String,
