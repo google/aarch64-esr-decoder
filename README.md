@@ -1,20 +1,25 @@
 # aarch64-esr-decoder
 
+A command-line utility to decode AArch64 ESR (Exception Syndrome Register) values.
+
+> **Note**: This is not an officially supported Google product.
+
 [![crates.io page](https://img.shields.io/crates/v/aarch64-esr-decoder.svg)](https://crates.io/crates/aarch64-esr-decoder)
 [![docs.rs page](https://docs.rs/aarch64-esr-decoder/badge.svg)](https://docs.rs/aarch64-esr-decoder)
 
-A small utility for decoding aarch64 ESR register values.
+## Installation
 
-This is not an officially supported Google product.
-
-## Usage
+### Install via Cargo
+```sh
+cargo install aarch64-esr-decoder
+```
 
 Install a Debian package from the
 [latest release](https://github.com/google/aarch64-esr-decoder/releases/tag/0.2.0), install with
 `cargo install aarch64-esr-decoder`, or
 [try the web version](https://google.github.io/aarch64-esr-decoder/).
 
-For the command-line version, just pass the ESR value you're interested in as a parameter, in
+command-line version, just pass the ESR value you're interested in as a parameter, in
 decimal or hexadecimal:
 
 ```
