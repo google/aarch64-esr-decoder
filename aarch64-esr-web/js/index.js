@@ -18,45 +18,58 @@ import("../pkg").then((wasm) => {
   const esr = document.getElementById("esr");
   if (esr != null) {
     esr.oninput = () => {
-      if (esr.value.length > 0) {
-        wasm.decode_esr(esr.value);
+      const value = esr.value.trim();
+      if (value.length > 0) {
+        wasm.decode_esr(value);
       }
-      window.location.hash = esr.value;
+      window.location.hash = value;
     };
 
     if (window.location.hash) {
-      esr.value = window.location.hash.substring(1);
-      wasm.decode_esr(esr.value);
+      const value = window.location.hash.substring(1).trim();
+      esr.value = value;
+      if (value.length > 0) {
+        wasm.decode_esr(value);
+      }
     }
   }
 
   const midr = document.getElementById("midr");
   if (midr != null) {
     midr.oninput = () => {
-      if (midr.value.length > 0) {
-        wasm.decode_midr(midr.value);
+      const value = midr.value.trim();
+      if (value.length > 0) {
+        wasm.decode_midr(value);
       }
-      window.location.hash = midr.value;
+      window.location.hash = value;
     };
 
     if (window.location.hash) {
-      midr.value = window.location.hash.substring(1);
-      wasm.decode_midr(midr.value);
+      const value = window.location.hash.substring(1).trim();
+      midr.value = value;
+      if (value.length > 0) {
+        wasm.decode_midr(value);
+      }
     }
   }
 
   const smccc = document.getElementById("smccc");
   if (smccc != null) {
     smccc.oninput = () => {
-      if (smccc.value.length > 0) {
-        wasm.decode_smccc(smccc.value);
+      const value = smccc.value.trim();
+      if (value.length > 0) {
+        wasm.decode_smccc(value);
       }
-      window.location.hash = smccc.value;
+      window.location.hash = value;
     };
 
     if (window.location.hash) {
-      smccc.value = window.location.hash.substring(1);
-      wasm.decode_smccc(smccc.value);
+      const value = window.location.hash.substring(1).trim();
+      smccc.value = value;
+
+      if (value.length > 0) {
+        wasm.decode_smccc(value);
+      }
     }
   }
 });
