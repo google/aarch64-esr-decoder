@@ -22,10 +22,10 @@ jobs:
       - name: Run tests
         run: cargo test --all
       - name: Run clippy
-        uses: actions-rs/clippy-check@b5b5f21f4797c02da247df37026fcd0a5024aa4d # v1
+        uses: auguwu/clippy-action@9817d076b82df0194935be9db6154c56ac07b317 # 1.5.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all --all-features
+          check-args: --all --all-features
 
   format:
     permissions: {}

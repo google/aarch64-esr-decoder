@@ -35,11 +35,10 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install ${{ matrix.binutils }}
       - name: Toolchain
-        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1
+        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
         with:
           toolchain: stable
-          target: ${{ matrix.target }}
-          override: true
+          targets: ${{ matrix.target }}
 
       - name: Cache .cargo and target
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
@@ -63,7 +62,7 @@ jobs:
         run: cargo install cargo-deb --version ${{ env.cargo-deb-version }} --locked
 
       - name: Cross build
-        uses: actions-rs/cargo@844f36862e911db73fe0815f00a4a2602c279505 # v1
+        uses: ClementTsang/cargo-action@3a7eb8bd7347b80ca95ab635409efd17d12156c2 # v0.0.3
         with:
           use-cross: true
           command: build
@@ -95,7 +94,7 @@ jobs:
           regex: "^refs/tags/(.+)$"
       - name: Create draft release
         id: create_release
-        uses: actions/create-release@0cb9c9b65d5d1901c1f53e5e66eaf4afd303e70e # v1
+        uses: comnoco/create-release-action@7dea6dc82ac9d97ced7a764aa82811451bba80e0 # v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions.
         with:
