@@ -28,6 +28,7 @@ jobs:
           args: --all --all-features
 
   format:
+    permissions: {}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -37,6 +38,7 @@ jobs:
         run: cargo fmt --all -- --check
 
   coverage:
+    permissions: {}
     runs-on: ubuntu-latest
     env:
       RUSTC_BOOTSTRAP: 1
