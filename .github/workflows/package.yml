@@ -62,7 +62,7 @@ jobs:
         run: cargo install cargo-deb --version ${{ env.cargo-deb-version }} --locked
 
       - name: Cross build
-        uses: ClementTsang/cargo-action@3a7eb8bd7347b80ca95ab635409efd17d12156c2 # v0.0.3
+        uses: ClementTsang/cargo-action@2438cc5f3ba4e971289fffca2a00dedea6911f14 # v0.0.7
         with:
           use-cross: true
           command: build
