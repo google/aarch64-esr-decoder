@@ -40,7 +40,7 @@ pub fn decode_iss_data_abort(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
     let isv = FieldInfo::get_bit(iss, "ISV", Some("Instruction Syndrome Valid"), 24)
         .describe_bit(describe_isv);
 
-    let intruction_syndrome_fields = if isv.as_bit() {
+    let instruction_syndrome_fields = if isv.as_bit() {
         // These fields are part of the instruction syndrome, and are only valid if ISV is true.
         let sas = FieldInfo::get(iss, "SAS", Some("Syndrome Access Size"), 22, 24);
         let sas_value = match sas.value {
@@ -77,7 +77,7 @@ pub fn decode_iss_data_abort(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
     };
 
     let mut fields = vec![isv];
-    fields.extend(intruction_syndrome_fields);
+    fields.extend(instruction_syndrome_fields);
     fields.extend(vec![vncr, set, fnv, ea, cm, s1ptw, wnr, dfsc]);
     Ok(fields)
 }
