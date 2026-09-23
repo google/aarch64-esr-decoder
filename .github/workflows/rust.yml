@@ -47,7 +47,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@7b8d4719ee4aaa279bdf55df38dacb9ebfe12a6c # v2.87.6
+        uses: taiki-e/install-action@94c31af3204a9f15ab40b35ad084410b905bbc73 # v2.87.17
         with:
           tool: cargo-llvm-cov
       - name: Run tests with coverage
