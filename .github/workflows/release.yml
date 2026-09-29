@@ -10,6 +10,7 @@ env:
 
 jobs:
   push:
+    permissions: {}
     runs-on: ubuntu-latest
     strategy:
       matrix:
