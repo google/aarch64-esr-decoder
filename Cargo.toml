@@ -3,7 +3,7 @@ members = ["arm-sysregs-json", "arm-sysregs-xml"]
 
 [package]
 name = "aarch64-esr-decoder"
-version = "0.2.4"
+version = "0.2.5"
 authors = ["Andrew Walbran <qwandor@google.com>"]
 edition = "2024"
 license = "Apache-2.0"

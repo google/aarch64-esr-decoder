@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.5
+
+- Decode more system register names.
+
 ## 0.2.4
 
 No new features or bugfixes, only dependency updates.
