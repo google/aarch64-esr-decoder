@@ -18,14 +18,7 @@ jobs:
     steps:
       - name: Download package from release
         run: wget ${{ matrix.asset.browser_download_url }}
-      - name: Parse filename
-        id: parse_filename
-        uses: actions-ecosystem/action-regex-match@v2
-        with:
-          text: ${{ matrix.asset.name }}
-          regex: "^[a-z0-9-]+_[0-9.-]+_([a-z0-9]+).deb$"
       - name: Upload deb package to Buildkite
-        if: ${{ steps.parse_filename.outputs.match != '' }}
         run: >
           curl -H "Authorization: Bearer ${{ secrets.BUILDKITE_TOKEN }}"
           -X POST "https://api.buildkite.com/v2/packages/organizations/qwandor/registries/qwandor/packages"
