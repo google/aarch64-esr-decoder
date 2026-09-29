@@ -1,0 +1,25 @@
+name: Release
+
+on:
+  release:
+    # A release, pre-release, or draft of a release is published.
+    types: [published]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  push:
+    permissions: {}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        asset: ${{ github.event.release.assets }}
+    steps:
+      - name: Download package from release
+        run: wget ${{ matrix.asset.browser_download_url }}
+      - name: Upload deb package to Buildkite
+        run: >
+          curl -H "Authorization: Bearer ${{ secrets.BUILDKITE_TOKEN }}"
+          -X POST "https://api.buildkite.com/v2/packages/organizations/qwandor/registries/qwandor/packages"
+          -F "file=@${{ matrix.asset.name }}"
