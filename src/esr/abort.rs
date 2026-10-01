@@ -17,7 +17,7 @@ use std::fmt::{self, Debug, Display, Formatter};
 
 /// Decodes the ISS value for an Instruction Abort.
 pub fn decode_iss_instruction_abort(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
-    let res0a = FieldInfo::get(iss, "RES0", Some("Reserved"), 13, 25).check_res0()?;
+    let res0a = FieldInfo::get(iss, "RES0", Some("Reserved"), 15, 25).check_res0()?;
     let fnv = FieldInfo::get_bit(iss, "FnV", Some("FAR not Valid"), 10).describe_bit(describe_fnv);
     let ea = FieldInfo::get_bit(iss, "EA", Some("External abort type"), 9);
     let res0b = FieldInfo::get_bit(iss, "RES0", Some("Reserved"), 8).check_res0()?;
@@ -26,13 +26,23 @@ pub fn decode_iss_instruction_abort(iss: u64) -> Result<Vec<FieldInfo>, DecodeEr
     let ifsc = FieldInfo::get(iss, "IFSC", Some("Instruction Fault Status Code"), 0, 6)
         .describe(describe_fsc)?;
 
+    // PFV is only defined for synchronous External aborts (FEAT_PFAR).
+    let pfv = if is_external_abort_fsc(ifsc.value) {
+        FieldInfo::get_bit(iss, "PFV", Some("PFAR Valid"), 14).describe_bit(describe_pfv)
+    } else {
+        FieldInfo::get_bit(iss, "RES0", Some("Reserved"), 14).check_res0()?
+    };
+    let res0d = FieldInfo::get_bit(iss, "RES0", Some("Reserved"), 13).check_res0()?;
+
     let set = if ifsc.value == 0b010000 {
         FieldInfo::get(iss, "SET", Some("Synchronous Error Type"), 11, 13).describe(describe_set)?
     } else {
         FieldInfo::get(iss, "RES0", Some("Reserved"), 11, 13)
     };
 
-    Ok(vec![res0a, set, fnv, ea, res0b, s1ptw, res0c, ifsc])
+    Ok(vec![
+        res0a, pfv, res0d, set, fnv, ea, res0b, s1ptw, res0c, ifsc,
+    ])
 }
 
 /// Decodes the ISS value for a Data Abort.
@@ -58,8 +68,33 @@ pub fn decode_iss_data_abort(iss: u64) -> Result<Vec<FieldInfo>, DecodeError> {
             FieldInfo::get_bit(iss, "AR", Some("Acquire/Release"), 14).describe_bit(describe_ar);
         vec![sas, sse, srt, sf, ar]
     } else {
-        let res0 = FieldInfo::get(iss, "RES0", Some("Reserved"), 14, 24).check_res0()?;
-        vec![res0]
+        // When ISV is 0, some of these bits have other meanings for certain fault types.
+        let external_abort = is_external_abort_fsc(iss & 0b111111);
+        let res0 = FieldInfo::get(iss, "RES0", Some("Reserved"), 21, 24).check_res0()?;
+        let mut fields = vec![res0];
+        if external_abort {
+            fields.push(FieldInfo::get(iss, "RES0", Some("Reserved"), 18, 21).check_res0()?);
+            fields.push(
+                FieldInfo::get(iss, "WU", Some("Write Update"), 16, 18).describe(describe_wu)?,
+            );
+        } else {
+            fields.push(FieldInfo::get(iss, "RES0", Some("Reserved"), 16, 21).check_res0()?);
+        }
+        // FnP only describes the precision of FAR, so it is meaningless if FnV says that FAR is
+        // not valid. FnV is only valid for DFSC 0b010000.
+        let far_not_valid = iss & 0b111111 == 0b010000 && iss & (1 << 10) != 0;
+        fields.push(
+            FieldInfo::get_bit(iss, "FnP", Some("FAR not Precise"), 15)
+                .describe_bit(|fnp| describe_fnp(fnp, far_not_valid)),
+        );
+        if external_abort {
+            fields.push(
+                FieldInfo::get_bit(iss, "PFV", Some("PFAR Valid"), 14).describe_bit(describe_pfv),
+            );
+        } else {
+            fields.push(FieldInfo::get_bit(iss, "RES0", Some("Reserved"), 14).check_res0()?);
+        }
+        fields
     };
 
     let vncr = FieldInfo::get_bit(iss, "VNCR", None, 13);
@@ -124,6 +159,43 @@ fn describe_ar(ar: bool) -> &'static str {
     } else {
         "No acquire/release semantics"
     }
+}
+
+/// Returns whether the given fault status code indicates a synchronous External abort, i.e. one
+/// of `0b010000`, `0b01001x` or `0b0101xx`.
+fn is_external_abort_fsc(fsc: u64) -> bool {
+    fsc == 0b010000 || fsc & 0b111110 == 0b010010 || fsc & 0b111100 == 0b010100
+}
+
+fn describe_pfv(pfv: bool) -> &'static str {
+    if pfv {
+        "MFAR_ELx is valid"
+    } else {
+        "MFAR_ELx is UNKNOWN"
+    }
+}
+
+fn describe_fnp(fnp: bool, far_not_valid: bool) -> &'static str {
+    if far_not_valid {
+        "Not applicable, FAR is not valid (see FnV)"
+    } else if fnp {
+        "FAR holds any virtual address within the naturally-aligned granule containing the \
+         faulting address"
+    } else {
+        "FAR holds the faulting virtual address"
+    }
+}
+
+fn describe_wu(wu: u64) -> Result<&'static str, DecodeError> {
+    Ok(match wu {
+        0b00 => {
+            "Not a store instruction or translation table update, or the location might have \
+             been updated"
+        }
+        0b10 => "Store instruction or translation table update that did not update the location",
+        0b11 => "Store instruction or translation table update that updated the location",
+        _ => "Reserved",
+    })
 }
 
 fn describe_fnv(fnv: bool) -> &'static str {

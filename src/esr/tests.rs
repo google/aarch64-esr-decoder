@@ -127,10 +127,50 @@ fn data_abort() {
                     FieldInfo {
                         name: "RES0",
                         long_name: Some("Reserved"),
-                        start: 14,
-                        width: 10,
+                        start: 21,
+                        width: 3,
                         value: 0,
                         description: None,
+                        subfields: vec![],
+                    },
+                    FieldInfo {
+                        name: "RES0",
+                        long_name: Some("Reserved"),
+                        start: 18,
+                        width: 3,
+                        value: 0,
+                        description: None,
+                        subfields: vec![],
+                    },
+                    FieldInfo {
+                        name: "WU",
+                        long_name: Some("Write Update"),
+                        start: 16,
+                        width: 2,
+                        value: 0,
+                        description: Some(
+                            "Not a store instruction or translation table update, or the \
+                             location might have been updated"
+                                .to_string()
+                        ),
+                        subfields: vec![],
+                    },
+                    FieldInfo {
+                        name: "FnP",
+                        long_name: Some("FAR not Precise"),
+                        start: 15,
+                        width: 1,
+                        value: 0,
+                        description: Some("FAR holds the faulting virtual address".to_string()),
+                        subfields: vec![],
+                    },
+                    FieldInfo {
+                        name: "PFV",
+                        long_name: Some("PFAR Valid"),
+                        start: 14,
+                        width: 1,
+                        value: 0,
+                        description: Some("MFAR_ELx is UNKNOWN".to_string()),
                         subfields: vec![],
                     },
                     FieldInfo {
@@ -454,8 +494,26 @@ fn instruction_abort() {
                     FieldInfo {
                         name: "RES0",
                         long_name: Some("Reserved"),
+                        start: 15,
+                        width: 10,
+                        value: 0,
+                        description: None,
+                        subfields: vec![],
+                    },
+                    FieldInfo {
+                        name: "PFV",
+                        long_name: Some("PFAR Valid"),
+                        start: 14,
+                        width: 1,
+                        value: 0,
+                        description: Some("MFAR_ELx is UNKNOWN".to_string()),
+                        subfields: vec![],
+                    },
+                    FieldInfo {
+                        name: "RES0",
+                        long_name: Some("Reserved"),
                         start: 13,
-                        width: 12,
+                        width: 1,
                         value: 0,
                         description: None,
                         subfields: vec![],
@@ -681,5 +739,61 @@ fn ld64b() {
                 }]
             }
         ]
+    );
+}
+
+#[test]
+fn data_abort_pfv() {
+    // Synchronous External abort from a lower EL with FEAT_PFAR PFV set (ISV == 0).
+    let decoded = decode(0x92004010).unwrap();
+    let iss = decoded.iter().find(|field| field.name == "ISS").unwrap();
+    let pfv = iss
+        .subfields
+        .iter()
+        .find(|field| field.name == "PFV")
+        .unwrap();
+    assert_eq!(pfv.start, 14);
+    assert_eq!(pfv.value, 1);
+    assert_eq!(pfv.description, Some("MFAR_ELx is valid".to_string()));
+    let fnp = iss
+        .subfields
+        .iter()
+        .find(|field| field.name == "FnP")
+        .unwrap();
+    assert_eq!(fnp.value, 0);
+    let wu = iss
+        .subfields
+        .iter()
+        .find(|field| field.name == "WU")
+        .unwrap();
+    assert_eq!(wu.value, 0);
+}
+
+#[test]
+fn data_abort_bit14_res0_for_non_external_abort() {
+    // Bit 14 is still RES0 when ISV == 0 and DFSC is not a synchronous External abort.
+    assert!(decode(0x96004005).is_err());
+}
+
+#[test]
+fn data_abort_fnp_with_fnv() {
+    // Synchronous External abort with FnV set: FnP must not claim that FAR is valid.
+    let decoded = decode(0x92000410).unwrap();
+    let iss = decoded.iter().find(|field| field.name == "ISS").unwrap();
+    let fnv = iss
+        .subfields
+        .iter()
+        .find(|field| field.name == "FnV")
+        .unwrap();
+    assert_eq!(fnv.value, 1);
+    let fnp = iss
+        .subfields
+        .iter()
+        .find(|field| field.name == "FnP")
+        .unwrap();
+    assert_eq!(fnp.value, 0);
+    assert_eq!(
+        fnp.description,
+        Some("Not applicable, FAR is not valid (see FnV)".to_string())
     );
 }
