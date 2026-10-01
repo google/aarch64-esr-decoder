@@ -167,7 +167,7 @@ fn is_external_abort_fsc(fsc: u64) -> bool {
     fsc == 0b010000 || fsc & 0b111110 == 0b010010 || fsc & 0b111100 == 0b010100
 }
 
-fn describe_pfv(pfv: bool) -> &'static str {
+pub(super) fn describe_pfv(pfv: bool) -> &'static str {
     if pfv {
         "MFAR_ELx is valid"
     } else {
@@ -186,7 +186,7 @@ fn describe_fnp(fnp: bool, far_not_valid: bool) -> &'static str {
     }
 }
 
-fn describe_wu(wu: u64) -> Result<&'static str, DecodeError> {
+pub(super) fn describe_wu(wu: u64) -> Result<&'static str, DecodeError> {
     Ok(match wu {
         0b00 => {
             "Not a store instruction or translation table update, or the location might have \
@@ -206,7 +206,7 @@ fn describe_fnv(fnv: bool) -> &'static str {
     }
 }
 
-fn describe_wnr(wnr: bool) -> &'static str {
+pub(super) fn describe_wnr(wnr: bool) -> &'static str {
     if wnr {
         "Abort caused by writing to memory"
     } else {

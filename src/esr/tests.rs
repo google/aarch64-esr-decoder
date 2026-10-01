@@ -797,3 +797,64 @@ fn data_abort_fnp_with_fnv() {
         Some("Not applicable, FAR is not valid (see FnV)".to_string())
     );
 }
+
+fn iss_subfield(decoded: &[FieldInfo], name: &str) -> FieldInfo {
+    let iss = decoded.iter().find(|field| field.name == "ISS").unwrap();
+    iss.subfields
+        .iter()
+        .find(|field| field.name == name)
+        .unwrap_or_else(|| panic!("No ISS subfield {name}"))
+        .clone()
+}
+
+#[test]
+fn serror_rasv2_fields() {
+    // ELS, VFV, PFV, WnRV and WnR set, AET = UER, DFSC = Asynchronous SError.
+    let decoded = decode(0xbe04ccd1).unwrap();
+    assert_eq!(iss_subfield(&decoded, "ELS").value, 1);
+    assert_eq!(iss_subfield(&decoded, "WU").value, 0);
+    assert_eq!(iss_subfield(&decoded, "VFV").value, 1);
+    assert_eq!(iss_subfield(&decoded, "PFV").value, 1);
+    assert_eq!(iss_subfield(&decoded, "WnRV").value, 1);
+    let wnr = iss_subfield(&decoded, "WnR");
+    assert_eq!(wnr.value, 1);
+    assert_eq!(
+        wnr.description,
+        Some("Abort caused by writing to memory".to_string())
+    );
+    assert_eq!(
+        iss_subfield(&decoded, "AET").description,
+        Some("Recoverable state (UER)".to_string())
+    );
+}
+
+#[test]
+fn serror_corrected() {
+    let decoded = decode(0xbe001811).unwrap();
+    assert_eq!(
+        iss_subfield(&decoded, "AET").description,
+        Some("Corrected (CE)".to_string())
+    );
+}
+
+#[test]
+fn serror_wnr_without_wnrv() {
+    // WnR is RES0 when WnRV is 0.
+    assert!(decode(0xbe000051).is_err());
+}
+
+#[test]
+fn serror_uncategorized_res0() {
+    // The RASv2 fields are RES0 when DFSC is not 0b010001.
+    assert!(decode(0xbe004000).is_err());
+}
+
+#[test]
+fn serror_wnr_not_valid() {
+    let decoded = decode(0xbe000011).unwrap();
+    assert_eq!(iss_subfield(&decoded, "WnRV").value, 0);
+    assert_eq!(
+        iss_subfield(&decoded, "WnR").description,
+        Some("Not valid (see WnRV)".to_string())
+    );
+}
