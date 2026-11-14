@@ -175,7 +175,7 @@ pub(super) fn describe_pfv(pfv: bool) -> &'static str {
     }
 }
 
-fn describe_fnp(fnp: bool, far_not_valid: bool) -> &'static str {
+pub(super) fn describe_fnp(fnp: bool, far_not_valid: bool) -> &'static str {
     if far_not_valid {
         "Not applicable, FAR is not valid (see FnV)"
     } else if fnp {
@@ -198,7 +198,7 @@ pub(super) fn describe_wu(wu: u64) -> Result<&'static str, DecodeError> {
     })
 }
 
-fn describe_fnv(fnv: bool) -> &'static str {
+pub(super) fn describe_fnv(fnv: bool) -> &'static str {
     if fnv {
         "FAR is not valid, it holds an unknown value"
     } else {
