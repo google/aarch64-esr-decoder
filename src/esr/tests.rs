@@ -858,3 +858,38 @@ fn serror_wnr_not_valid() {
         Some("Not valid (see WnRV)".to_string())
     );
 }
+
+#[test]
+fn watchpoint_wpt() {
+    // Watchpoint from the current EL with WPT = 3 and WPTV set (FEAT_Debugv8p2), WnR = 1.
+    let decoded = decode(0xd60e0062).unwrap();
+    let wpt = iss_subfield(&decoded, "WPT");
+    assert_eq!(wpt.start, 18);
+    assert_eq!(wpt.width, 6);
+    assert_eq!(wpt.value, 3);
+    assert_eq!(iss_subfield(&decoded, "WPTV").value, 1);
+    assert_eq!(iss_subfield(&decoded, "WPF").value, 0);
+    assert_eq!(iss_subfield(&decoded, "WnR").value, 1);
+}
+
+#[test]
+fn watchpoint_wpf_fnp() {
+    let decoded = decode(0xd6018062).unwrap();
+    assert_eq!(iss_subfield(&decoded, "WPF").value, 1);
+    assert_eq!(iss_subfield(&decoded, "FnP").value, 1);
+    assert_eq!(iss_subfield(&decoded, "WPTV").value, 0);
+}
+
+#[test]
+fn watchpoint_fnv() {
+    let decoded = decode(0xd6000462).unwrap();
+    let fnv = iss_subfield(&decoded, "FnV");
+    assert_eq!(fnv.start, 10);
+    assert_eq!(fnv.value, 1);
+}
+
+#[test]
+fn watchpoint_bit24_res0() {
+    // Bit 24 is still RES0.
+    assert!(decode(0xd7000062).is_err());
+}
